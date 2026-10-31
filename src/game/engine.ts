@@ -86,7 +86,7 @@ const QUEST_GROUPS: QuestDef[][] = [
   ],
   [
     { id: 'meals3', label: 'Eat 3 of your 5 meals', xp: 30, done: (f) => f.meals >= 3 },
-    { id: 'meals5', label: 'Eat all 5 meals', xp: 45, done: (f) => f.meals === 5 },
+    { id: 'meals5', label: 'Eat every planned meal', xp: 45, done: (f) => f.fullMeals },
     { id: 'mealnote', label: 'Write notes on 2 meals', xp: 30, done: (f) => f.mealNotes >= 2 },
   ],
   [
@@ -158,7 +158,7 @@ export function computeGame(state: AppState, today: DateKey, themesTried: ThemeI
     questsCompleted += done
     if (done === 3) boardsCleared++
     wordsXp += Math.min(100, Math.floor(f.noteWords / 10))
-    if (f.meals === 5 && f.share === 1) bodyAndSoulDays++
+    if (f.fullMeals && f.share === 1) bodyAndSoulDays++
   }
   const todayFacts = stats.days.find((d) => d.date === today)
   const todayQuests = todayFacts

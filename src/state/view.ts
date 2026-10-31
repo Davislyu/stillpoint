@@ -12,6 +12,7 @@ export function toAppState(t: TableStore): AppState {
   }
 
   return {
+    mealsPerDay: 5,
     habits: Object.values(t.habits).map((h) => ({
       id: h.id,
       name: h.name,
@@ -38,5 +39,19 @@ export function toAppState(t: TableStore): AppState {
         category: s.category,
       }))
       .sort((a, b) => b.date.localeCompare(a.date)),
+    notes: Object.values(t.notes ?? {})
+      .map((n) => ({ id: n.id, date: n.date, title: n.title ?? '', body: n.body ?? '' }))
+      .sort((a, b) => b.date.localeCompare(a.date) || a.id.localeCompare(b.id)),
+    exercises: Object.values(t.exercises ?? {})
+      .map((e) => ({
+        id: e.id,
+        name: e.name,
+        kg: Number(e.weight_kg) || 0,
+        reps: e.reps || 1,
+        createdOn: e.created_on,
+        prOn: e.pr_on ?? null,
+        history: Array.isArray(e.history) ? e.history : [],
+      }))
+      .sort((a, b) => a.createdOn.localeCompare(b.createdOn) || a.id.localeCompare(b.id)),
   }
 }

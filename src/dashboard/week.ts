@@ -1,5 +1,5 @@
 import { addDays, startOfWeek } from '../lib/date'
-import { completionOn } from '../state/selectors'
+import { completionOn, mealSlots } from '../state/selectors'
 import type { AppState, DateKey } from '../state/types'
 
 export interface WeekSummary {
@@ -44,7 +44,7 @@ export function summarizeWeek(s: AppState, today: DateKey): WeekSummary {
     if (c.share === 1) out.perfectDays++
     out.ticks += c.done
     if (!out.bestDay || c.done > out.bestDay.ticks) out.bestDay = c.done > 0 ? { date: d, ticks: c.done } : out.bestDay
-    out.meals += [1, 2, 3, 4, 5].filter((n) => s.meals[d]?.[n as 1]?.isCompleted).length
+    out.meals += mealSlots(s).filter((n) => s.meals[d]?.[n]?.isCompleted).length
     const o = s.observations[d]
     if (o && (o.criticalThinking.trim() || o.observations.trim())) out.noteDays++
     if (d < today && first && d >= first && !spendDays.has(d)) out.noSpendDays++

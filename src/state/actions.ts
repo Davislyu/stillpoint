@@ -21,6 +21,14 @@ export type Action =
   | { type: 'workout/set'; weekStart: DateKey; count: number }
   | { type: 'spending/add'; date: DateKey; amountCents: number; description: string; category: SpendingCategory }
   | { type: 'spending/remove'; id: string }
+  | { type: 'note/create'; id: string; date: DateKey; title: string; body: string }
+  | { type: 'note/edit'; id: string; title?: string; body?: string }
+  | { type: 'note/remove'; id: string }
+  | { type: 'exercise/add'; id: string; name: string; kg: number; reps: number; today: DateKey }
+  | { type: 'exercise/pr'; id: string; kg: number; reps: number; today: DateKey }
+  | { type: 'exercise/correct'; id: string; kg: number }
+  | { type: 'exercise/rename'; id: string; name: string }
+  | { type: 'exercise/remove'; id: string }
 
 const upsert = (table: TableName, row: Record<string, unknown>): Op => ({
   opId: uid(),
@@ -38,6 +46,9 @@ const update = (table: TableName, id: string, patch: Record<string, unknown>): O
   patch,
 })
 const del = (table: TableName, id: string): Op => ({ opId: uid(), table, kind: 'delete', key: id, id })
+
+const clampKg = (n: number) => Math.min(999.99, Math.max(0, Math.round((Number(n) || 0) * 100) / 100))
+const clampReps = (n: number) => Math.min(100, Math.max(1, Math.round(Number(n) || 1)))
 
 export function actionToOps(action: Action, t: TableStore, userId: string): Op[] {
   switch (action.type) {
@@ -134,6 +145,57 @@ export function actionToOps(action: Action, t: TableStore, userId: string): Op[]
         }),
       ]
     }
+    case 'note/create':
+      return [upsert('notes', { id: action.id, user_id: userId, date: action.date, title: action.title.slice(0, 120), body: action.body.slice(0, 20000) })]
+    case 'note/edit': {
+      if (!t.notes[action.id] && !action.id) return []
+      const patch: Record<string, unknown> = {}
+      if (action.title !== undefined) patch.title = action.title.slice(0, 120)
+      if (action.body !== undefined) patch.body = action.body.slice(0, 20000)
+      return Object.keys(patch).length ? [update('notes', action.id, patch)] : []
+    }
+    case 'note/remove':
+      return [del('notes', action.id)]
+    case 'exercise/add': {
+      const name = action.name.trim().slice(0, 60)
+      if (!name) return []
+      const kg = clampKg(action.kg)
+      return [
+        upsert('exercises', {
+          id: action.id,
+          user_id: userId,
+          name,
+          weight_kg: kg,
+          reps: clampReps(action.reps),
+          created_on: action.today,
+          pr_on: kg > 0 ? action.today : null,
+          history: kg > 0 ? [{ date: action.today, kg, reps: clampReps(action.reps) }] : [],
+        }),
+      ]
+    }
+    case 'exercise/pr': {
+      const ex = t.exercises[action.id]
+      if (!ex) return []
+      const kg = clampKg(action.kg)
+      const reps = clampReps(action.reps)
+      // One entry per day: a second PR the same day replaces the first.
+      const history = [...(ex.history ?? []).filter((h) => h.date !== action.today), { date: action.today, kg, reps }].slice(-120)
+      return [update('exercises', action.id, { weight_kg: kg, reps, pr_on: action.today, history })]
+    }
+    case 'exercise/correct': {
+      // Fixing a typo: changes the current weight and today's entry, not a new PR.
+      const ex = t.exercises[action.id]
+      if (!ex) return []
+      const kg = clampKg(action.kg)
+      const history = (ex.history ?? []).map((h, i, a) => (i === a.length - 1 ? { ...h, kg } : h))
+      return [update('exercises', action.id, { weight_kg: kg, history })]
+    }
+    case 'exercise/rename': {
+      const name = action.name.trim().slice(0, 60)
+      return name && t.exercises[action.id] ? [update('exercises', action.id, { name })] : []
+    }
+    case 'exercise/remove':
+      return [del('exercises', action.id)]
     case 'spending/remove':
       return t.non_essential_spendings[action.id] ? [del('non_essential_spendings', action.id)] : []
   }

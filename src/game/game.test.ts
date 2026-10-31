@@ -4,7 +4,7 @@ import type { AppState } from '../state/types'
 import { ACHIEVEMENTS, RARITIES } from './achievements'
 import { computeGame, levelFromXp, questsFor, xpForLevel } from './engine'
 
-const empty = (): AppState => ({ habits: [], completions: {}, milestones: {}, observations: {}, meals: {}, workouts: {}, spendings: [] })
+const empty = (): AppState => ({ habits: [], completions: {}, milestones: {}, observations: {}, meals: {}, workouts: {}, spendings: [], mealsPerDay: 5, notes: [], exercises: [] })
 const TODAY = '2026-10-31'
 
 describe('achievement catalog', () => {

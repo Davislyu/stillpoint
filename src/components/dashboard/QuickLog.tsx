@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
 import { startOfWeek } from '../../lib/date'
-import { activeHabits, isDone, mealsDone, workoutsInWeek } from '../../state/selectors'
+import { activeHabits, isDone, mealSlots, mealsDone, workoutsInWeek } from '../../state/selectors'
 import { useStore } from '../../state/store'
-import { MEAL_NUMBERS, WORKOUTS_PER_WEEK } from '../../state/types'
+import { WORKOUTS_PER_WEEK } from '../../state/types'
 import { Button } from '../ui/Button'
 
 /** Everything you log in a day, in one sheet: three taps and you're done. */
@@ -63,10 +63,10 @@ export default function QuickLog({ onClose, onSpend }: { onClose: () => void; on
           </section>
           <section aria-label="Meals">
             <h3 className="mb-2 text-[13px] text-ink-2">
-              Meals <span className="text-muted tabular">{mealsDone(state, today)} of 5</span>
+              Meals <span className="text-muted tabular">{mealsDone(state, today)} of {state.mealsPerDay}</span>
             </h3>
             <div className="flex gap-2">
-              {MEAL_NUMBERS.map((n) => {
+              {mealSlots(state).map((n) => {
                 const on = !!state.meals[today]?.[n]?.isCompleted
                 return (
                   <button key={n} type="button" aria-pressed={on} aria-label={`Meal ${n}`} className={`${chip(on)} flex-1 px-0`} onClick={() => dispatch({ type: 'meal/toggle', date: today, meal: n })}>

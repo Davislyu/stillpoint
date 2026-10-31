@@ -5,7 +5,8 @@
  */
 import { addDays, addMonths, daysBetween, fromKey, monthOf, startOfWeek, toKey } from '../lib/date'
 import { completionOn } from '../state/selectors'
-import { MEAL_NUMBERS, type AppState, type DateKey } from '../state/types'
+import { mealSlots } from '../state/selectors'
+import { type AppState, type DateKey } from '../state/types'
 
 export const words = (s: string | undefined) => (s ? s.trim().split(/\s+/).filter(Boolean).length : 0)
 
@@ -17,6 +18,8 @@ export interface DayFacts {
   meals: number
   mealNotes: number
   noteWords: number
+  /** Every planned meal eaten. */
+  fullMeals: boolean
   hasNote: boolean
   hasCritical: boolean
   hasObservation: boolean
@@ -30,7 +33,8 @@ export function dayFacts(s: AppState, date: DateKey, spendByDay: Map<DateKey, nu
   const o = s.observations[date]
   const ct = o?.criticalThinking.trim() ?? ''
   const ob = o?.observations.trim() ?? ''
-  const mealsDone = MEAL_NUMBERS.filter((n) => meals[n]?.isCompleted).length
+  const slots = mealSlots(s)
+  const mealsDone = slots.filter((n) => meals[n]?.isCompleted).length
   const spendCount = spendByDay.get(date) ?? 0
   return {
     date,
@@ -38,7 +42,8 @@ export function dayFacts(s: AppState, date: DateKey, spendByDay: Map<DateKey, nu
     habitsTotal: c.total,
     share: c.share,
     meals: mealsDone,
-    mealNotes: MEAL_NUMBERS.filter((n) => meals[n]?.notes?.trim()).length,
+    fullMeals: mealsDone === slots.length,
+    mealNotes: slots.filter((n) => meals[n]?.notes?.trim()).length,
     noteWords: words(ct) + words(ob),
     hasNote: !!(ct || ob),
     hasCritical: !!ct,
@@ -153,9 +158,9 @@ export function computeStats(s: AppState, today: DateKey): PlayerStats {
 
     st.mealsLogged += f.meals
     st.mealNotes += f.mealNotes
-    for (const n of MEAL_NUMBERS) if (s.meals[date]?.[n]?.isCompleted) st.mealSlot[n]++
-    if (f.meals === 5) st.fullMealDays++
-    mealRun = f.meals === 5 ? mealRun + 1 : isToday ? mealRun : 0
+    for (const n of mealSlots(s)) if (s.meals[date]?.[n]?.isCompleted) st.mealSlot[n]++
+    if (f.fullMeals) st.fullMealDays++
+    mealRun = f.fullMeals ? mealRun + 1 : isToday ? mealRun : 0
     st.bestFullMealStreak = Math.max(st.bestFullMealStreak, mealRun)
 
     if (f.hasNote) st.noteDays++
@@ -168,7 +173,7 @@ export function computeStats(s: AppState, today: DateKey): PlayerStats {
     st.bestNoteStreak = Math.max(st.bestNoteStreak, noteRun)
 
     if (firstSpend && date >= firstSpend && f.spendCount === 0 && !isToday) st.noSpendDays++
-    if (half && f.meals === 5 && f.hasNote && f.spendCount === 0) st.fullPartyDays++
+    if (half && f.fullMeals && f.hasNote && f.spendCount === 0) st.fullPartyDays++
 
     if (f.active) {
       if (seenActive && gap >= 3) st.comebacks++

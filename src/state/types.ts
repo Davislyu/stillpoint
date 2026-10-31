@@ -39,6 +39,32 @@ export interface Spending {
   category: SpendingCategory
 }
 
+export interface Note {
+  id: string
+  /** Day it was written. */
+  date: DateKey
+  title: string
+  body: string
+}
+
+export interface PrEntry {
+  date: DateKey
+  kg: number
+  reps: number
+}
+
+export interface Exercise {
+  id: string
+  name: string
+  /** Current best, in kilograms. */
+  kg: number
+  reps: number
+  createdOn: DateKey
+  prOn: DateKey | null
+  /** Every PR, oldest first. */
+  history: PrEntry[]
+}
+
 /** The read model every component renders from. Derived from synced rows. */
 export interface AppState {
   habits: Habit[]
@@ -52,4 +78,8 @@ export interface AppState {
   /** Monday of the week → workouts logged */
   workouts: Record<DateKey, number>
   spendings: Spending[]
+  /** How many meals the person plans to eat a day (1 to 5). Comes from preferences, not from synced rows. */
+  mealsPerDay: number
+  notes: Note[]
+  exercises: Exercise[]
 }

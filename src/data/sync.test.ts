@@ -32,6 +32,8 @@ const emptySnap = (): Snapshot =>
     meals: [],
     workouts: [],
     non_essential_spendings: [],
+    notes: [],
+    exercises: [],
   }) as Snapshot
 
 /** Scriptable backend: a server-side row list, a switchable network, a realtime hook. */

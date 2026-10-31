@@ -97,7 +97,7 @@ export function damageLines(f: DayFacts, today: DateKey, questsDone: number, fea
   const lines: DamageLine[] = []
   if (f.habitsDone) lines.push({ source: 'habits', label: `Habits ×${f.habitsDone}`, amount: f.habitsDone * 15 })
   if (f.share === 1) lines.push({ source: 'habits', label: 'Perfect day', amount: 30 })
-  if (f.meals) lines.push({ source: 'meals', label: `Meals ×${f.meals}`, amount: f.meals * 6 + (f.meals === 5 ? 20 : 0) })
+  if (f.meals) lines.push({ source: 'meals', label: `Meals ×${f.meals}`, amount: f.meals * 6 + (f.fullMeals ? 20 : 0) })
   const mind = Math.min(40, Math.floor(f.noteWords / 4)) + (f.hasCritical ? 15 : 0)
   if (mind) lines.push({ source: 'mind', label: 'Notes', amount: mind })
   if (f.date < today && f.active && f.spendCount === 0) lines.push({ source: 'gold', label: 'Purse kept shut', amount: 20 })

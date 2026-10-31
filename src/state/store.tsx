@@ -75,7 +75,8 @@ export function StoreProvider({ backend, user, onRejected, children }: Props) {
   const now = useNow(30_000)
   const today = todayKey(new Date(now))
 
-  const state = useMemo(() => toAppState(sync.tables), [sync.tables])
+  const mealsPerDay = themeCtx.prefs.mealsPerDay
+  const state = useMemo(() => ({ ...toAppState(sync.tables), mealsPerDay }), [sync.tables, mealsPerDay])
 
   // Theme choice follows the account across devices.
   const theme = useThemeCtx()

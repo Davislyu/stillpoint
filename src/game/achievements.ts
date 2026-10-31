@@ -127,7 +127,7 @@ const FAMILIES: Family[] = [
   // ── Meals ─────────────────────────────────────────────────────────────
   { id: 'meals', category: 'body', metric: (c) => c.stats.mealsLogged, describe: (t) => `Log ${plural(t, 'meal')}.`,
     tiers: [[1, 'First Bite'], [10, 'Fed'], [25, 'Regular'], [50, 'Well Fed'], [100, 'Hundred Plates'], [250, 'Grazer'], [500, 'Five Hundred Plates'], [1000, 'Feast Master'], [2500, 'Bottomless'], [5000, 'The Great Feast']] },
-  { id: 'five-a-day', category: 'body', metric: (c) => c.stats.fullMealDays, describe: (t) => `Eat all 5 meals on ${plural(t, 'day')}.`,
+  { id: 'five-a-day', category: 'body', metric: (c) => c.stats.fullMealDays, describe: (t) => `Eat every planned meal on ${plural(t, 'day')}.`,
     tiers: [[1, 'Five for Five'], [3, 'Fueled'], [7, 'Bulking Week'], [14, 'Steady Gains'], [30, 'Meal Prepper'], [60, 'Kitchen Regular'], [100, 'Nutrition Ninja'], [200, 'Iron Stomach'], [365, 'A Year of Plates']] },
   { id: 'fuel-streak', category: 'body', metric: (c) => c.stats.bestFullMealStreak, describe: (t) => `Eat all 5 meals ${t} days running.`,
     tiers: [[3, 'On Schedule'], [7, 'Clockwork'], [14, 'Metronome'], [30, 'Machine'], [60, 'Perpetual Motion']] },

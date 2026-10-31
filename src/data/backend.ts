@@ -1,5 +1,5 @@
 import type { Op, RemoteEvent } from './ops'
-import type { Snapshot } from './schema'
+import type { Snapshot, TableName } from './schema'
 
 export interface AuthUser {
   id: string
@@ -26,6 +26,8 @@ export type ChannelStatus = 'live' | 'down'
  */
 export interface Backend {
   readonly kind: 'supabase' | 'memory'
+  /** Optional tables the database doesn't have yet (its migration hasn't been run). */
+  missingTables?(): TableName[]
   getUser(): Promise<AuthUser | null>
   onAuthChange(cb: (user: AuthUser | null) => void): () => void
   signInWithGoogle(): Promise<void>

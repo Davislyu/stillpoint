@@ -52,6 +52,8 @@ export interface Preferences {
   /** Weekly targets the person sets for themselves. */
   goals: WeeklyGoals
   reminder: Reminder
+  /** Meals planned per day, 1 to 5. */
+  mealsPerDay: number
 }
 
 const isCurrency = (v: unknown): v is Currency => v === 'ILS' || v === 'USD'
@@ -85,13 +87,14 @@ function load(): Preferences {
         layout: normalizeLayout(p.layout),
         goals: normGoals(p.goals),
         reminder: normReminder(p.reminder),
+        mealsPerDay: clampInt(p.mealsPerDay, 1, 5, 5),
       }
     }
     const legacy = localStorage.getItem(LEGACY_MODE_KEY)
     const mode: Mode = legacy === 'light' || legacy === 'dark' ? legacy : 'system'
-    return { theme: 'stillpoint', mode, themesTried: ['stillpoint'], currency: defaultCurrency(), equipped: {}, layout: null, goals: DEFAULT_GOALS, reminder: DEFAULT_REMINDER }
+    return { theme: 'stillpoint', mode, themesTried: ['stillpoint'], currency: defaultCurrency(), equipped: {}, layout: null, goals: DEFAULT_GOALS, reminder: DEFAULT_REMINDER, mealsPerDay: 5 }
   } catch {
-    return { theme: 'stillpoint', mode: 'system', themesTried: ['stillpoint'], currency: 'USD', equipped: {}, layout: null, goals: DEFAULT_GOALS, reminder: DEFAULT_REMINDER }
+    return { theme: 'stillpoint', mode: 'system', themesTried: ['stillpoint'], currency: 'USD', equipped: {}, layout: null, goals: DEFAULT_GOALS, reminder: DEFAULT_REMINDER, mealsPerDay: 5 }
   }
 }
 
@@ -109,6 +112,7 @@ export function normalizePrefs(raw: unknown): Partial<Preferences> {
   if (layout) out.layout = layout
   if ((r as { goals?: unknown }).goals) out.goals = normGoals((r as { goals?: unknown }).goals)
   if ((r as { reminder?: unknown }).reminder) out.reminder = normReminder((r as { reminder?: unknown }).reminder)
+  if (typeof (r as { mealsPerDay?: unknown }).mealsPerDay === 'number') out.mealsPerDay = clampInt((r as { mealsPerDay?: unknown }).mealsPerDay, 1, 5, 5)
   return out
 }
 
@@ -141,6 +145,7 @@ interface ThemeCtx {
   setLayout: (layout: Layout) => void
   setGoals: (goals: WeeklyGoals) => void
   setReminder: (reminder: Reminder) => void
+  setMealsPerDay: (n: number) => void
   /** Id of the account whose preferences have been loaded (null before sign-in loads). */
   loadedFor: string | null
   /** Merge preferences loaded from the account (another device's choice). */
@@ -210,6 +215,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       setLayout: (layout) => update((p) => ({ ...p, layout })),
       setGoals: (goals) => update((p) => ({ ...p, goals: normGoals(goals) })),
       setReminder: (reminder) => update((p) => ({ ...p, reminder: normReminder(reminder) })),
+      setMealsPerDay: (n) => update((p) => ({ ...p, mealsPerDay: clampInt(n, 1, 5, 5) })),
       loadedFor,
       adopt: (remote, owner) => {
         setLoadedFor(owner)
@@ -224,6 +230,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
             layout: remote.layout ?? (p.layout?.owner === owner ? p.layout : null),
             goals: remote.goals ?? p.goals,
             reminder: remote.reminder ?? p.reminder,
+            mealsPerDay: remote.mealsPerDay ?? p.mealsPerDay,
           }),
           false,
         )

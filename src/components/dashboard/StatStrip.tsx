@@ -42,7 +42,7 @@ export function StatStrip() {
           }
         />
       </div>
-      <div className="bg-surface"><Stat label="Meals today" value={meals} unit="of 5" /></div>
+      <div className="bg-surface"><Stat label="Meals today" value={meals} unit={`of ${state.mealsPerDay}`} /></div>
       <div className="bg-surface">
         <Stat label="Workouts this week" value={workouts} unit={`of ${WORKOUTS_PER_WEEK}`} />
       </div>

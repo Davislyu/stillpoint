@@ -2,7 +2,7 @@ import { createClient, type SupabaseClient, type User } from '@supabase/supabase
 import { addDays } from '../lib/date'
 import { ConfigError, type AuthUser, type Backend, type WriteResult } from './backend'
 import type { Op } from './ops'
-import { TABLE_NAMES, TABLES, usesNaturalKey, type AnyRow, type Snapshot, type TableName } from './schema'
+import { OPTIONAL_TABLES, TABLE_NAMES, TABLES, usesNaturalKey, type AnyRow, type Snapshot, type TableName } from './schema'
 
 /** How far back each table is loaded. Older rows stay in the database. */
 const WINDOW_DAYS: Record<TableName, number | null> = {
@@ -14,6 +14,8 @@ const WINDOW_DAYS: Record<TableName, number | null> = {
   meals: 730,
   workouts: 7 * 104,
   non_essential_spendings: 730,
+  notes: null,
+  exercises: null,
 }
 const DATE_COLUMN: Partial<Record<TableName, string>> = {
   habit_completions: 'date',
@@ -22,6 +24,10 @@ const DATE_COLUMN: Partial<Record<TableName, string>> = {
   workouts: 'week_start_date',
   non_essential_spendings: 'date',
 }
+
+const missing = new Set<TableName>()
+const isMissingTable = (e: { code?: string; message?: string }) =>
+  e.code === '42P01' || e.code === 'PGRST205' || /does not exist|could not find the table/i.test(e.message ?? '')
 
 const toAuthUser = (u: User): AuthUser => ({
   id: u.id,
@@ -96,6 +102,12 @@ export function createSupabaseBackend(): Backend {
         if (days && col) q = q.gte(col, addDays(today, -days))
         if (table === 'habits') q = q.order('created_at', { ascending: true })
         const { data, error } = await q
+        // A table whose migration hasn't been run yet: carry on without it.
+        if (error && OPTIONAL_TABLES.includes(table) && isMissingTable(error)) {
+          missing.add(table)
+          return [table, []] as const
+        }
+        if (!error) missing.delete(table)
         if (error) throw error
         return [table, data ?? []] as const
       })
@@ -130,6 +142,8 @@ export function createSupabaseBackend(): Backend {
       }
     },
 
+    missingTables: () => [...missing],
+
     async markDefaultsSeeded(userId) {
       await sb.from('users').update({ defaults_seeded: true }).eq('id', userId)
     },
@@ -140,28 +154,42 @@ export function createSupabaseBackend(): Backend {
 
     subscribe(userId, onEvent, onStatus) {
       const channel = sb.channel(`stillpoint:${userId}:${Math.random().toString(36).slice(2, 10)}`)
-      for (const table of TABLE_NAMES) {
+      const watch = (ch: ReturnType<typeof sb.channel>, table: TableName) => {
         // INSERT/UPDATE are filtered to this user (and RLS-checked by Realtime).
-        channel.on(
+        ch.on(
           'postgres_changes',
           { event: 'INSERT', schema: 'public', table, filter: `user_id=eq.${userId}` },
           (p) => onEvent({ table, type: 'upsert', row: p.new as Record<string, unknown> }),
         )
-        channel.on(
+        ch.on(
           'postgres_changes',
           { event: 'UPDATE', schema: 'public', table, filter: `user_id=eq.${userId}` },
           (p) => onEvent({ table, type: 'upsert', row: p.new as Record<string, unknown> }),
         )
         // DELETE events can't be filtered and carry only the primary key; a
         // delete for an id we don't hold is simply ignored.
-        channel.on('postgres_changes', { event: 'DELETE', schema: 'public', table }, (p) => {
+        ch.on('postgres_changes', { event: 'DELETE', schema: 'public', table }, (p) => {
           const id = (p.old as { id?: string }).id
           if (id) onEvent({ table, type: 'delete', id })
         })
       }
+      for (const table of TABLE_NAMES) if (!OPTIONAL_TABLES.includes(table)) watch(channel, table)
+      // Newer tables get their own channel, and only once they are known to exist, so a
+      // database that hasn't been updated yet never disturbs the main connection.
+      const extra = sb.channel(`stillpoint:${userId}:x:${Math.random().toString(36).slice(2, 10)}`)
+      let extraOn = false
+      const timer = setTimeout(() => {
+        const present = OPTIONAL_TABLES.filter((t) => !missing.has(t))
+        if (!present.length) return
+        for (const t of present) watch(extra, t)
+        extraOn = true
+        extra.subscribe()
+      }, 1500)
       channel.subscribe((status) => onStatus(status === 'SUBSCRIBED' ? 'live' : 'down'))
       return () => {
+        clearTimeout(timer)
         void sb.removeChannel(channel)
+        if (extraOn) void sb.removeChannel(extra)
       }
     },
   }

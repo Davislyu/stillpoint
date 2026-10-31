@@ -94,8 +94,11 @@ export function streakInfo(s: AppState, today: DateKey): StreakInfo {
 
 // ── Meals ───────────────────────────────────────────────────────────────
 
+/** The meal slots in use, per the person's own target. */
+export const mealSlots = (s: Pick<AppState, 'mealsPerDay'>) => MEAL_NUMBERS.filter((n) => n <= s.mealsPerDay)
+
 export const mealsDone = (s: AppState, day: DateKey) =>
-  MEAL_NUMBERS.filter((n) => s.meals[day]?.[n]?.isCompleted).length
+  mealSlots(s).filter((n) => s.meals[day]?.[n]?.isCompleted).length
 
 // ── Workouts ────────────────────────────────────────────────────────────
 

@@ -139,3 +139,36 @@ do $$ begin
   raise exception 'FAIL non-object preferences allowed';
 exception when check_violation then raise notice 'PASS preferences must be a JSON object';
 end $$;
+
+-- ── notes (second brain) and exercises (lifts) ─────────────────────────
+-- Fresh accounts, because an earlier test deletes alice.
+reset role;
+insert into auth.users (id, email, raw_user_meta_data) values
+  ('33333333-0000-0000-0000-00000000000c', 'carol@example.com', '{}'),
+  ('44444444-0000-0000-0000-00000000000d', 'dave@example.com',  '{}');
+\set carol '\'33333333-0000-0000-0000-00000000000c\''
+\set dave  '\'44444444-0000-0000-0000-00000000000d\''
+set role authenticated;
+select set_config('request.jwt.claim.sub', :carol, false);
+insert into public.notes (date, title, body) values ('2026-10-31', 'Carol idea', 'secret [[Other]] #private');
+insert into public.exercises (name, weight_kg, created_on) values ('Squat', 100, '2026-10-31');
+select 'PASS carol writes her own note and lift' where (select count(*) from public.notes) = 1 and (select count(*) from public.exercises) = 1;
+select set_config('request.jwt.claim.sub', :dave, false);
+do $$ begin
+  if (select count(*) from public.notes) + (select count(*) from public.exercises) <> 0 then raise exception 'FAIL dave can read carol''s notes or lifts'; end if;
+  update public.notes set body = 'hacked'; delete from public.notes;
+  update public.exercises set weight_kg = 1; delete from public.exercises;
+  raise notice 'PASS dave sees and changes none of carol''s notes or lifts';
+end $$;
+do $$ begin
+  insert into public.notes (date, title, user_id) values ('2026-10-31', 'Spoof', '33333333-0000-0000-0000-00000000000c');
+  raise exception 'FAIL dave forged a note for carol';
+exception when insufficient_privilege then raise notice 'PASS forged note owner rejected by RLS';
+end $$;
+do $$ begin
+  insert into public.exercises (name, weight_kg, created_on) values ('Bad', -5, '2026-10-31');
+  raise exception 'FAIL negative weight allowed';
+exception when check_violation then raise notice 'PASS negative weight rejected';
+end $$;
+select set_config('request.jwt.claim.sub', :carol, false);
+select 'PASS carol''s data survived' where (select body from public.notes limit 1) = 'secret [[Other]] #private' and (select weight_kg from public.exercises limit 1) = 100;

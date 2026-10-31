@@ -50,6 +50,25 @@ export type SpendingRow = {
   category: SpendingCategory
 }
 
+export type NoteRow = {
+  id: string
+  user_id: string
+  date: DateKey
+  title: string
+  body: string
+}
+export type PrEntry = { date: DateKey; kg: number; reps: number }
+export type ExerciseRow = {
+  id: string
+  user_id: string
+  name: string
+  weight_kg: number
+  reps: number
+  created_on: DateKey
+  pr_on: DateKey | null
+  history: PrEntry[]
+}
+
 export interface RowMap {
   habits: HabitRow
   habit_completions: CompletionRow
@@ -58,6 +77,8 @@ export interface RowMap {
   meals: MealRow
   workouts: WorkoutRow
   non_essential_spendings: SpendingRow
+  notes: NoteRow
+  exercises: ExerciseRow
 }
 export type TableName = keyof RowMap
 /** Any row, possibly partial (patches), as it travels through the sync layer. */
@@ -100,7 +121,20 @@ export const TABLES: Record<TableName, TableSpec> = {
     onConflict: 'id',
     columns: 'id,user_id,date,amount,description,category',
   },
+  notes: {
+    key: ['id'],
+    onConflict: 'id',
+    columns: 'id,user_id,date,title,body',
+  },
+  exercises: {
+    key: ['id'],
+    onConflict: 'id',
+    columns: 'id,user_id,name,weight_kg,reps,created_on,pr_on,history',
+  },
 }
+
+/** Tables added after launch. If the database hasn't been updated yet, the app runs without them. */
+export const OPTIONAL_TABLES: TableName[] = ['notes', 'exercises']
 
 export const TABLE_NAMES = Object.keys(TABLES) as TableName[]
 
@@ -121,6 +155,8 @@ export const emptyTables = (): TableStore => ({
   meals: {},
   workouts: {},
   non_essential_spendings: {},
+  notes: {},
+  exercises: {},
 })
 
 export type Snapshot = { [T in TableName]: RowMap[T][] }

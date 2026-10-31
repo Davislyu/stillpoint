@@ -52,6 +52,7 @@ export function useAutosave(stored: string, save: (value: string) => void, delay
 
   return {
     draft,
+    flush,
     setDraft,
     pending: draft !== stored,
     bind: {

@@ -20,6 +20,8 @@ import { HeroPanel } from './components/game/HeroPanel'
 import { FirstWeek } from './components/dashboard/FirstWeek'
 import { useReminder } from './hooks/useReminder'
 import { WeekPanel } from './components/dashboard/WeekPanel'
+import { BrainPanel } from './components/brain/BrainPanel'
+import { LiftTracker } from './components/body/LiftTracker'
 import { HuntPanel } from './components/game/HuntPanel'
 import { QuestBoard } from './components/game/QuestBoard'
 import { GameProvider } from './game/GameProvider'
@@ -30,8 +32,8 @@ import { useStore } from './state/store'
 import type { DateKey } from './state/types'
 
 const QuickLog = lazy(() => import('./components/dashboard/QuickLog'))
-const MAIN: PanelId[] = ['stats', 'week', 'hunt', 'focus', 'quests', 'habits', 'history', 'notes']
-const ASIDE: PanelId[] = ['hero', 'calendar', 'meals', 'workouts', 'spending']
+const MAIN: PanelId[] = ['stats', 'week', 'hunt', 'focus', 'quests', 'habits', 'history', 'notes', 'brain']
+const ASIDE: PanelId[] = ['hero', 'calendar', 'meals', 'workouts', 'lifts', 'spending']
 
 export default function App() {
   const { today, sync, engine, user } = useStore()
@@ -152,6 +154,10 @@ export default function App() {
         return <MealLog date={selectedDay} onBackToToday={backToToday} />
       case 'workouts':
         return <WorkoutTracker />
+      case 'lifts':
+        return <LiftTracker />
+      case 'brain':
+        return <BrainPanel />
       case 'spending':
         return <SpendingLedger />
       case 'hero':

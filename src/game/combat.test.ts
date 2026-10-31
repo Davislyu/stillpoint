@@ -7,7 +7,7 @@ import { rollDrop } from './loot'
 import { computeStats } from './stats'
 
 const TODAY = '2026-10-31'
-const empty = (): AppState => ({ habits: [], completions: {}, milestones: {}, observations: {}, meals: {}, workouts: {}, spendings: [] })
+const empty = (): AppState => ({ habits: [], completions: {}, milestones: {}, observations: {}, meals: {}, workouts: {}, spendings: [], mealsPerDay: 5, notes: [], exercises: [] })
 const hab = (n: number) => Array.from({ length: n }, (_, i) => ({ id: `h${i}`, name: `H${i}`, accent: 'sage' as const, createdOn: addDays(TODAY, -3) }))
 const fullMeals = () => Object.fromEntries([1, 2, 3, 4, 5].map((n) => [n, { isCompleted: true, notes: '' }]))
 const run = (s: AppState, equipped: Record<string, string> = {}) =>

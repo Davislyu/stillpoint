@@ -1,7 +1,8 @@
 import { useAutosave } from '../../hooks/useAutosave'
-import { mealsDone } from '../../state/selectors'
+import { mealSlots, mealsDone } from '../../state/selectors'
 import { useStore } from '../../state/store'
-import { MEAL_NUMBERS, type DateKey, type MealNumber } from '../../state/types'
+import { useThemeCtx } from '../../themes/vibe'
+import type { DateKey, MealNumber } from '../../state/types'
 import { PastDayNote } from '../ui/DayContext'
 import { CheckIcon } from '../ui/Icons'
 import { Panel } from '../ui/Panel'
@@ -45,17 +46,39 @@ function MealRow({ date, n }: { date: DateKey; n: MealNumber }) {
   )
 }
 
+/** Pick how many meals a day: 1 to 5. */
+function MealCount() {
+  const { prefs, setMealsPerDay } = useThemeCtx()
+  const n = prefs.mealsPerDay
+  const btn = 'grid size-8 place-items-center rounded-full border border-line text-ink-2 hover:bg-surface-2 hover:text-ink disabled:pointer-events-none disabled:opacity-35'
+  return (
+    <div className="flex items-center gap-1" role="group" aria-label="Meals per day">
+      <button type="button" className={btn} aria-label="Fewer meals per day" disabled={n <= 1} onClick={() => setMealsPerDay(n - 1)}>
+        −
+      </button>
+      <span className="min-w-12 text-center text-[12px] text-muted tabular" aria-live="polite">
+        {n} a day
+      </span>
+      <button type="button" className={btn} aria-label="More meals per day" disabled={n >= 5} onClick={() => setMealsPerDay(n + 1)}>
+        +
+      </button>
+    </div>
+  )
+}
+
 export function MealLog({ date, onBackToToday }: { date: DateKey; onBackToToday: () => void }) {
   const { state, today } = useStore()
   const done = mealsDone(state, date)
+  const slots = mealSlots(state)
   return (
     <Panel
       id="meals"
       title="Meals"
-      hint={date === today ? `${done} of 5 eaten` : <PastDayNote date={date} today={today} onBackToToday={onBackToToday} />}
+      actions={<MealCount />}
+      hint={date === today ? `${done} of {slots.length} eaten` : <PastDayNote date={date} today={today} onBackToToday={onBackToToday} />}
     >
       <div className="mb-3 flex gap-1" aria-hidden="true">
-        {MEAL_NUMBERS.map((n) => (
+        {slots.map((n) => (
           <span
             key={n}
             className={`h-1 flex-1 rounded-full transition-colors duration-300 ${
@@ -65,7 +88,7 @@ export function MealLog({ date, onBackToToday }: { date: DateKey; onBackToToday:
         ))}
       </div>
       <ul className="divide-y divide-line">
-        {MEAL_NUMBERS.map((n) => (
+        {slots.map((n) => (
           <MealRow key={`${date}-${n}`} date={date} n={n} />
         ))}
       </ul>

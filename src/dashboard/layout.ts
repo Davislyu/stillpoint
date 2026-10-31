@@ -12,7 +12,9 @@ export type PanelId =
   | 'history'
   | 'calendar'
   | 'notes'
+  | 'brain'
   | 'meals'
+  | 'lifts'
   | 'workouts'
   | 'spending'
   | 'hero'
@@ -29,8 +31,10 @@ export const PANELS: { id: PanelId; label: string; hint: string; tab: Tab }[] = 
   { id: 'history', label: 'History', hint: 'The last weeks as a strip of days.', tab: 'today' },
   { id: 'calendar', label: 'Google Calendar', hint: "Today's events, add workouts to your calendar.", tab: 'today' },
   { id: 'notes', label: 'Notes & critical thinking', hint: 'Daily observations and one thing you questioned.', tab: 'notes' },
-  { id: 'meals', label: 'Meals', hint: 'Five meals a day, with notes.', tab: 'body' },
+  { id: 'brain', label: 'Second brain', hint: 'Linked notes drawn as a neural network inside a brain.', tab: 'notes' },
+  { id: 'meals', label: 'Meals', hint: 'Choose 1 to 5 meals a day, with notes.', tab: 'body' },
   { id: 'workouts', label: 'Workouts', hint: 'Four sessions a week.', tab: 'body' },
+  { id: 'lifts', label: 'Lifts & PRs', hint: 'Track your best weight per exercise in kg.', tab: 'body' },
   { id: 'spending', label: 'Extra spending', hint: 'Non-essential spending and the monthly total.', tab: 'money' },
   { id: 'hero', label: 'Hero & achievements', hint: 'Level, class, gear and 338 achievements.', tab: 'hero' },
 ]
@@ -99,7 +103,7 @@ export const AURAS: Aura[] = [
     emblem: '✿',
     theme: 'kawaii',
     featured: null,
-    hidden: ['hunt', 'workouts', 'calendar', 'stats'],
+    hidden: ['hunt', 'workouts', 'lifts', 'calendar', 'stats'],
     starter: [['Sketch for 15 minutes', 'mauve'], ['Paint something small', 'sand'], ['Walk and collect colours', 'sage'], ['Drink water', 'teal']],
   },
   {
@@ -109,7 +113,7 @@ export const AURAS: Aura[] = [
     emblem: '♛',
     theme: 'bullet',
     featured: 'spending',
-    hidden: ['hunt', 'workouts', 'calendar'],
+    hidden: ['hunt', 'workouts', 'lifts', 'brain', 'calendar'],
     starter: [['Log every purchase', 'sand'], ['No-spend day', 'sage'], ['Cook at home', 'clay'], ['Check the budget', 'dusk']],
   },
   {
@@ -119,7 +123,7 @@ export const AURAS: Aura[] = [
     emblem: '☯',
     theme: 'zen',
     featured: 'workouts',
-    hidden: ['hunt', 'quests', 'spending', 'calendar', 'focus'],
+    hidden: ['hunt', 'quests', 'spending', 'brain', 'calendar', 'focus'],
     starter: [['Meditate 10 minutes', 'sage'], ['Stretch', 'teal'], ['Train', 'clay'], ['No phone after 22:00', 'dusk']],
   },
   {
@@ -128,8 +132,8 @@ export const AURAS: Aura[] = [
     tagline: 'Read, question, write it down. A chronicle of the mind.',
     emblem: '✒',
     theme: 'manuscript',
-    featured: 'notes',
-    hidden: ['hunt', 'workouts', 'spending'],
+    featured: 'brain',
+    hidden: ['hunt', 'workouts', 'lifts', 'spending'],
     starter: [['Read 20 pages', 'mauve'], ['Deep work block', 'dusk'], ['Write one observation', 'sand'], ["Review yesterday's notes", 'sage']],
   },
   {
