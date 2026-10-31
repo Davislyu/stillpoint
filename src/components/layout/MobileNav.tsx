@@ -40,7 +40,7 @@ export function MobileNav({ view, tabs, onChange }: { view: View; tabs: View[]; 
   return (
     <nav aria-label="Sections" className="tabbar-wrap pointer-events-none fixed inset-x-0 z-30 flex justify-center px-3 lg:hidden">
       <div
-        className="tabbar pointer-events-auto relative grid h-16 w-full max-w-md overflow-hidden rounded-[1.4rem] border border-line bg-surface/85 p-1 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.45)] backdrop-blur-xl backdrop-saturate-150"
+        className="tabbar pointer-events-auto relative grid h-16 w-full max-w-md overflow-hidden rounded-[1.4rem] border border-line bg-bg/85 p-1 shadow-[0_12px_40px_-12px_rgba(0,0,0,0.45)] backdrop-blur-xl backdrop-saturate-150"
         style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
       >
         <span

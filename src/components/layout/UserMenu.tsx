@@ -101,7 +101,7 @@ export function UserMenu() {
       {open && (
         <div
           role="menu"
-          className="anim-rise absolute right-0 z-40 mt-2 w-72 rounded-2xl border border-line bg-surface p-1.5 shadow-[0_16px_48px_-20px_rgba(0,0,0,0.45)]"
+          className="anim-rise absolute right-0 z-40 mt-2 w-72 rounded-2xl border border-line bg-bg p-1.5 shadow-[0_16px_48px_-20px_rgba(0,0,0,0.45)]"
         >
           <div className="px-3 pt-2 pb-3">
             <p className="truncate text-sm font-medium text-ink">{user.name ?? 'Signed in'}</p>
