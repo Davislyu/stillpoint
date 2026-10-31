@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { addMonths, longDate, monthLabel, monthOf, type MonthKey } from '../../lib/date'
-import { categoryLabel, formatCents } from '../../lib/money'
+import { categoryLabel, useMoney } from '../../lib/money'
+import { CURRENCIES } from '../../themes/vibe'
 import { monthTotalCents, spendingsInMonth } from '../../state/selectors'
 import { useStore } from '../../state/store'
 import { IconButton } from '../ui/Button'
@@ -16,6 +17,7 @@ const Chevron = ({ dir }: { dir: 'left' | 'right' }) => (
 
 export function SpendingLedger() {
   const { state, dispatch, today } = useStore()
+  const { format: formatCents, currency, setCurrency } = useMoney()
   const current = monthOf(today)
   const [month, setMonth] = useState<MonthKey>(current)
   const total = monthTotalCents(state, month)
@@ -36,7 +38,27 @@ export function SpendingLedger() {
   const days = [...new Set(entries.map((e) => e.date))]
 
   return (
-    <Panel id="spending" title="Extra spendings" hint="Only the leaks: coffee, subscriptions, impulse buys. Not groceries or bills.">
+    <Panel
+      id="spending"
+      title="Extra spendings"
+      hint="Only the leaks: coffee, subscriptions, impulse buys. Not groceries or bills."
+      actions={
+        <div role="radiogroup" aria-label="Currency" className="flex rounded-full border border-line p-0.5">
+          {CURRENCIES.map((c) => (
+            <button
+              key={c.id}
+              role="radio"
+              aria-checked={currency === c.id}
+              title={c.label}
+              onClick={() => setCurrency(c.id)}
+              className={`grid h-7 min-w-8 place-items-center rounded-full px-2 text-[13px] ${currency === c.id ? 'bg-surface-2 text-ink' : 'text-muted hover:text-ink'}`}
+            >
+              {c.symbol}
+            </button>
+          ))}
+        </div>
+      }
+    >
       <div className="rounded-xl bg-bg px-4 py-4">
         <div className="flex items-center justify-between">
           <IconButton aria-label="Previous month" disabled={month <= oldest} onClick={() => setMonth(addMonths(month, -1))} className="disabled:opacity-30">

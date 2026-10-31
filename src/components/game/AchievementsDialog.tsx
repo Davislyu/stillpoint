@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { CATEGORY_LABEL, RARITIES, type Category, type Rarity } from '../../game/achievements'
+import { ACHIEVEMENTS, CATEGORY_LABEL, RARITIES, type Category, type Rarity } from '../../game/achievements'
 import { useGame } from '../../game/GameProvider'
 import { shortDate } from '../../lib/date'
 import { Button } from '../ui/Button'
@@ -35,7 +35,7 @@ export function AchievementsDialog({ onClose }: { onClose: () => void }) {
     [game.achievements, cat, show, rarity],
   )
   const counts = useMemo(() => {
-    const c: Record<string, [number, number]> = { all: [game.unlockedCount, 300] }
+    const c: Record<string, [number, number]> = { all: [game.unlockedCount, ACHIEVEMENTS.length] }
     for (const k of CATS) {
       const items = game.achievements.filter((v) => v.a.category === k)
       c[k] = [items.filter((v) => v.unlocked).length, items.length]
@@ -60,7 +60,7 @@ export function AchievementsDialog({ onClose }: { onClose: () => void }) {
             <div>
               <h2 id="ach-title" className="font-display text-2xl font-medium tracking-[-0.02em] text-ink">Achievements</h2>
               <p className="mt-1 text-sm text-muted tabular">
-                {game.unlockedCount} of 300 earned, {game.xp.toLocaleString()} XP total
+                {game.unlockedCount} of {ACHIEVEMENTS.length} earned, {game.xp.toLocaleString()} XP total
               </p>
             </div>
             <Button variant="primary" onClick={onClose}>

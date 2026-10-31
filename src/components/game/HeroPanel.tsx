@@ -1,5 +1,7 @@
 import { useState } from 'react'
+import { ACHIEVEMENTS } from '../../game/achievements'
 import { ATTR_LABEL, nextUp, type Attr } from '../../game/engine'
+import { ITEM_COLOR, SLOT_LABEL, SLOTS } from '../../game/loot'
 import { useGame } from '../../game/GameProvider'
 import { shortDate } from '../../lib/date'
 import { useStore } from '../../state/store'
@@ -7,6 +9,7 @@ import { useVibe } from '../../themes/vibe'
 import { Button } from '../ui/Button'
 import { Panel } from '../ui/Panel'
 import { AchievementsDialog } from './AchievementsDialog'
+import { ArmoryDialog } from './ArmoryDialog'
 import { Badge, RARITY_COLOR } from './Badge'
 
 /** A class sigil: a ring per ten levels around a glyph. */
@@ -29,6 +32,8 @@ export function HeroPanel() {
   const { user } = useStore()
   const vibe = useVibe()
   const [open, setOpen] = useState(false)
+  const [armory, setArmory] = useState<null | 'gear' | 'bestiary'>(null)
+  const total = ACHIEVEMENTS.length
   const pct = (game.level.into / game.level.span) * 100
   const maxAttr = Math.max(1, ...Object.values(game.attrs))
   const recent = game.achievements
@@ -38,7 +43,7 @@ export function HeroPanel() {
   const upcoming = nextUp(game, 3)
 
   return (
-    <Panel id="hero" title={vibe.heroTab} hint={`${game.unlockedCount} of 300 achievements`}>
+    <Panel id="hero" title={vibe.heroTab} hint={`${game.unlockedCount} of ${total} achievements`}>
       <div className="flex items-center gap-4">
         <Sigil level={game.level.level} />
         <div className="min-w-0 flex-1">
@@ -66,6 +71,36 @@ export function HeroPanel() {
           </div>
         ))}
       </dl>
+
+      <div className="mt-5 border-t border-line pt-4">
+        <div className="mb-2 flex items-baseline justify-between">
+          <h3 className="text-[13px] text-ink-2">Gear</h3>
+          <span className="text-[12px] text-muted tabular">
+            {game.combat.inventory.length} {game.combat.inventory.length === 1 ? 'item' : 'items'}, {game.combat.slainCount.size} {game.combat.slainCount.size === 1 ? 'monster' : 'monsters'} met
+          </span>
+        </div>
+        <ul className="grid grid-cols-3 gap-1.5">
+          {SLOTS.map((s) => {
+            const it = game.combat.equipped[s]
+            return (
+              <li key={s} className="min-w-0 rounded-lg border px-2 py-1.5" style={{ borderColor: it ? ITEM_COLOR[it.rarity] : 'var(--line)' }} title={it?.name}>
+                <p className="text-[10px] tracking-wide text-muted uppercase">{SLOT_LABEL[s]}</p>
+                <p className="truncate text-[12px]" style={{ color: it ? ITEM_COLOR[it.rarity] : 'var(--muted)' }}>
+                  {it ? it.name : 'Empty'}
+                </p>
+              </li>
+            )
+          })}
+        </ul>
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          <Button size="sm" onClick={() => setArmory('gear')}>
+            Armoury
+          </Button>
+          <Button size="sm" onClick={() => setArmory('bestiary')}>
+            Bestiary
+          </Button>
+        </div>
+      </div>
 
       {upcoming.length > 0 && (
         <div className="mt-5 border-t border-line pt-4">
@@ -102,9 +137,10 @@ export function HeroPanel() {
       )}
 
       <Button className="mt-5 w-full" onClick={() => setOpen(true)}>
-        All achievements ({game.unlockedCount}/300)
+        All achievements ({game.unlockedCount}/{total})
       </Button>
       {open && <AchievementsDialog onClose={() => setOpen(false)} />}
+      {armory && <ArmoryDialog initialTab={armory} onClose={() => setArmory(null)} />}
     </Panel>
   )
 }

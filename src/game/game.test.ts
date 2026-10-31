@@ -8,12 +8,13 @@ const empty = (): AppState => ({ habits: [], completions: {}, milestones: {}, ob
 const TODAY = '2026-10-31'
 
 describe('achievement catalog', () => {
-  it('has exactly 300 achievements with unique, database-safe ids', () => {
-    expect(ACHIEVEMENTS).toHaveLength(300)
+  it('has 338 achievements (301 + 37 hunt) with unique, database-safe ids', () => {
+    expect(ACHIEVEMENTS).toHaveLength(338)
     const ids = ACHIEVEMENTS.map((a) => a.id)
-    expect(new Set(ids).size).toBe(300)
+    expect(new Set(ids).size).toBe(338)
     for (const id of ids) expect(id).toMatch(/^[a-z0-9-]{1,40}$/) // milestones.milestone_key check
-    expect(new Set(ACHIEVEMENTS.map((a) => a.name)).size).toBe(300)
+    expect(new Set(ACHIEVEMENTS.map((a) => a.name)).size).toBe(338)
+    expect(ACHIEVEMENTS.find((a) => a.name === 'Completionist')!.target).toBe(337)
   })
   it('keeps the v2 streak milestone ids so earned badges carry over', () => {
     for (const id of ['streak-3', 'streak-7', 'streak-14', 'streak-30']) expect(ids()).toContain(id)

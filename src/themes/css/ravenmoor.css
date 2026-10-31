@@ -1,0 +1,80 @@
+@import '@fontsource/cinzel/latin-500.css';
+@import '@fontsource/cinzel/latin-700.css';
+@import '@fontsource/eb-garamond/latin-400.css';
+@import '@fontsource/eb-garamond/latin-600.css';
+
+/* Ravenmoor: a gothic keep at night. Iron-framed panels, bronze rivets,
+   candlelit gold and blood-red accents over cold stone. */
+[data-theme='ravenmoor'] {
+  color-scheme: dark;
+  --bg: #0b0a0c;
+  --surface: rgb(24 21 24 / 0.86);
+  --surface-2: #1f1b1e;
+  --line: #3a2f27;
+  --line-strong: #7a5c3a;
+  --ink: #e8dfcc;
+  --ink-2: #c3b69c;
+  --muted: #8a7c66;
+  --accent-sage: #6f8a6a; --accent-sage-soft: #1d241c;
+  --accent-dusk: #6a74a0; --accent-dusk-soft: #1a1c28;
+  --accent-mauve: #9a6ac0; --accent-mauve-soft: #231a2a;
+  --accent-sand: #d4a54a; --accent-sand-soft: #2a2114;
+  --accent-teal: #5d8f8a; --accent-teal-soft: #172322;
+  --accent-clay: #b3262a; --accent-clay-soft: #2a1213;
+  --font-display: 'Cinzel', 'Trajan Pro', Georgia, serif;
+  --font-sans: 'EB Garamond', Georgia, serif;
+  --radius-2xl: 3px; --radius-xl: 3px; --radius-lg: 2px;
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(ellipse at 50% -10%, rgb(179 38 42 / 0.16), transparent 55%),
+    radial-gradient(ellipse at 50% 120%, rgb(0 0 0 / 0.9), transparent 60%),
+    repeating-linear-gradient(0deg, rgb(255 255 255 / 0.012) 0 2px, transparent 2px 46px),
+    repeating-linear-gradient(90deg, rgb(255 255 255 / 0.012) 0 2px, transparent 2px 92px);
+  font-size: 17px;
+}
+[data-theme='ravenmoor'] .panel {
+  position: relative;
+  border: 1px solid var(--line-strong) !important;
+  box-shadow: inset 0 0 0 3px var(--bg), inset 0 0 0 4px var(--line), 0 10px 40px rgb(0 0 0 / 0.6) !important;
+  background-image: linear-gradient(180deg, rgb(255 240 210 / 0.025), transparent 40%);
+}
+/* Bronze rivets in the corners. */
+[data-theme='ravenmoor'] .panel::before,
+[data-theme='ravenmoor'] .panel::after {
+  content: '';
+  position: absolute;
+  top: 7px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #e3c07a, #6b4a22 70%);
+  pointer-events: none;
+}
+[data-theme='ravenmoor'] .panel::before { left: 7px; }
+[data-theme='ravenmoor'] .panel::after { right: 7px; }
+[data-theme='ravenmoor'] .panel-title {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.14em !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  color: var(--accent-sand) !important;
+}
+[data-theme='ravenmoor'] .panel-title::before { content: '\2020  '; color: var(--accent-clay); }
+[data-theme='ravenmoor'] .hero-title { font-weight: 500 !important; letter-spacing: 0.04em !important; text-shadow: 0 0 24px rgb(179 38 42 / 0.35); }
+[data-theme='ravenmoor'] .stat-value { font-family: var(--font-display); font-weight: 500 !important; color: var(--accent-sand); }
+[data-theme='ravenmoor'] .btn { font-family: var(--font-display); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.12em; border-radius: 2px !important; border-color: var(--line-strong) !important; }
+[data-theme='ravenmoor'] .btn-primary {
+  background: linear-gradient(180deg, #8c1d21, #5a1013) !important;
+  color: #f3e3c0 !important;
+  border: 1px solid #c79a4e !important;
+  box-shadow: inset 0 1px 0 rgb(255 220 160 / 0.25), 0 0 18px rgb(179 38 42 / 0.3) !important;
+}
+[data-theme='ravenmoor'] .check { border-radius: 1px !important; transform: rotate(45deg) scale(0.85); }
+[data-theme='ravenmoor'] .col { border-radius: 1px !important; }
+[data-theme='ravenmoor'] .col-fill { border-radius: 0 !important; background: linear-gradient(#d4a54a, #7a5c3a) !important; }
+[data-theme='ravenmoor'] .toast { border-radius: 2px !important; background: #140f10 !important; color: var(--ink) !important; border: 1px solid var(--line-strong) !important; }
+[data-theme='ravenmoor'] .tabbar { border-top: 1px solid var(--line-strong) !important; background: rgb(11 10 12 / 0.95) !important; }
+[data-theme='ravenmoor'] .hp-bar { border: 1px solid var(--line-strong); background: #160c0d !important; }
+[data-theme='ravenmoor'] .monster-portrait { filter: drop-shadow(0 0 6px rgb(179 38 42 / 0.45)); }
+[data-theme='ravenmoor'] .field { border-radius: 2px !important; }

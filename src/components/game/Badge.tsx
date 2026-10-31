@@ -20,6 +20,7 @@ const SHAPE: Record<Rarity, string> = {
 }
 
 const ICON: Record<Category, string> = {
+  hunt: 'M15 15l18 18M33 15L15 33M15 15l-1.5 4.5M15 15l4.5-1.5M33 15l1.5 4.5M33 15l-4.5-1.5M17 29l-3 3M31 29l3 3',
   habits: 'M17 24.5l4.6 4.6L31 19.6',
   body: 'M15 22h18a9 9 0 01-18 0zM19 17c0-2 2-2 2-4M24 17c0-2 2-2 2-4M29 17c0-2 2-2 2-4',
   training: 'M14 21v6M17 18v12M31 18v12M34 21v6M17 24h14',

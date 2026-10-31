@@ -18,6 +18,7 @@ export type ThemeId =
   | 'cottage'
   | 'kawaii'
   | 'abyss'
+  | 'ravenmoor'
 
 export interface Vibe {
   /** Rewrites a panel title ("Daily habits" → "~/daily-habits"). */
@@ -31,6 +32,7 @@ export interface Vibe {
   quest: string
   /** Name for the hero/achievements tab. */
   heroTab: string
+  slain: string
 }
 
 export interface ThemeDef {
@@ -55,9 +57,28 @@ const base: Vibe = {
   xp: 'XP',
   quest: 'Daily quests',
   heroTab: 'Hero',
+  slain: 'Slain',
 }
 
 export const THEMES: ThemeDef[] = [
+  {
+    id: 'ravenmoor',
+    name: 'Ravenmoor',
+    tagline: 'A gothic keep at night. Iron, candlelight and old blood.',
+    scheme: 'dark',
+    swatch: ['#0b0a0c', '#1f1b1e', '#e8dfcc', '#b3262a'],
+    vibe: {
+      ...base,
+      title: (t) => t,
+      greeting: (g) => `${g}, hunter.`,
+      unlocked: 'Feat of arms',
+      levelUp: 'Your legend grows',
+      level: 'Rank',
+      quest: 'Bounties',
+      heroTab: 'The Hunter',
+      slain: 'Vanquished',
+    },
+  },
   {
     id: 'stillpoint',
     name: 'Stillpoint',
@@ -81,6 +102,7 @@ export const THEMES: ThemeDef[] = [
       xp: 'xp',
       quest: 'cron --daily',
       heroTab: 'whoami',
+      slain: 'kill -9: process terminated',
     },
   },
   {
@@ -109,6 +131,7 @@ export const THEMES: ThemeDef[] = [
       ...base,
       greeting: (g) => g.toUpperCase(),
       unlocked: 'NEW HIGH SCORE',
+      slain: 'K.O.!',
       levelUp: 'STAGE CLEAR',
       level: 'LV',
       quest: 'Missions',
@@ -125,6 +148,7 @@ export const THEMES: ThemeDef[] = [
       ...base,
       greeting: (g) => `${g}, traveller.`,
       unlocked: 'A deed is recorded',
+      slain: 'The beast is vanquished',
       levelUp: 'Thou hast risen',
       level: 'Rank',
       quest: 'Daily oaths',
@@ -157,6 +181,7 @@ export const THEMES: ThemeDef[] = [
       ...base,
       greeting: (g) => `${g.toUpperCase()}, P1!`,
       unlocked: 'ITEM GET!',
+      slain: 'ENEMY DEFEATED!',
       levelUp: 'LEVEL UP!',
       level: 'LV',
       quest: 'QUESTS',
@@ -237,6 +262,7 @@ export const THEMES: ThemeDef[] = [
       ...base,
       greeting: (g) => `${g}! ♡`,
       unlocked: 'Yay! New badge ♡',
+      slain: 'Bonk! ✧',
       levelUp: 'Level up!! ✧',
       level: 'Lv.',
       quest: 'Daily sparkles',

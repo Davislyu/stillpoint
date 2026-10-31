@@ -7,6 +7,7 @@ import type { AppState, DateKey } from '../state/types'
 import type { ThemeId } from '../themes/registry'
 import { ACHIEVEMENT_BY_ID, ACHIEVEMENTS, isMeta, isReached, progressOf, type Achievement, type GameCtx } from './achievements'
 import { computeStats, hash, type DayFacts, type PlayerStats } from './stats'
+import { computeCombat, type Combat } from './combat'
 
 // ── Levels ──────────────────────────────────────────────────────────────
 
@@ -139,18 +140,21 @@ export interface GameState {
   achievements: AchievementView[]
   unlockedCount: number
   freshIds: string[]
+  combat: Combat
 }
 
-export function computeGame(state: AppState, today: DateKey, themesTried: ThemeId[]): GameState {
+export function computeGame(state: AppState, today: DateKey, themesTried: ThemeId[], equippedIds: Record<string, string> = {}): GameState {
   const stats = computeStats(state, today)
 
   let questsCompleted = 0
   let boardsCleared = 0
   let wordsXp = 0
   let bodyAndSoulDays = 0
+  const questsDoneByDay = new Map<DateKey, number>()
   for (const f of stats.days) {
     const r = questResults(f, today)
     const done = r.filter((x) => x.done).length
+    questsDoneByDay.set(f.date, done)
     questsCompleted += done
     if (done === 3) boardsCleared++
     wordsXp += Math.min(100, Math.floor(f.noteWords / 10))
@@ -180,6 +184,9 @@ export function computeGame(state: AppState, today: DateKey, themesTried: ThemeI
     questXp +
     boardsCleared * 50
 
+  const combat = computeCombat({ state, today, stats, questsDoneByDay, equippedIds })
+  const allItems = combat.inventory
+
   const tickCache = new Map<string, number>()
   const habitTicksByName = (re: RegExp) => {
     const k = re.source
@@ -195,17 +202,26 @@ export function computeGame(state: AppState, today: DateKey, themesTried: ThemeI
   const saved = state.milestones
   const base: Omit<GameCtx, 'level' | 'totalXp' | 'unlockedCount'> = {
     stats, themesTried, questsCompleted, boardsCleared, habitTicksByName, bodyAndSoulDays,
+    hunt: {
+      kills: combat.kills.minion + combat.kills.elite + combat.kills.boss,
+      elites: combat.kills.elite,
+      bosses: combat.kills.boss,
+      bossKinds: combat.bossKinds,
+      items: allItems.length,
+      epics: allItems.filter((i) => i.rarity === 'epic').length,
+      legendaries: allItems.filter((i) => i.rarity === 'legendary').length,
+    },
   }
 
   // Pass 1: everything that doesn't depend on XP itself.
   const provisional = { ...base, level: 1, totalXp: 0, unlockedCount: 0 }
   const reached = new Set<string>()
   for (const a of ACHIEVEMENTS) if (!isMeta(a) && (saved[a.id] || isReached(a, provisional))) reached.add(a.id)
-  for (const id of Object.keys(saved)) reached.add(id)
+  for (const id of Object.keys(saved)) if (ACHIEVEMENT_BY_ID.has(id)) reached.add(id)
 
   // Pass 2: XP from activity + achievements, then the meta achievements (level, XP, collector).
   const sumXp = () => [...reached].reduce((s, id) => s + (ACHIEVEMENT_BY_ID.get(id)?.xp ?? 0), 0)
-  let xp = activityXp + sumXp()
+  let xp = activityXp + combat.killXp + sumXp()
   for (let i = 0; i < 4; i++) {
     const ctx: GameCtx = { ...base, level: levelFromXp(xp).level, totalXp: xp, unlockedCount: reached.size }
     let added = false
@@ -215,7 +231,7 @@ export function computeGame(state: AppState, today: DateKey, themesTried: ThemeI
         added = true
       }
     }
-    xp = activityXp + sumXp()
+    xp = activityXp + combat.killXp + sumXp()
     if (!added) break
   }
 
@@ -233,7 +249,7 @@ export function computeGame(state: AppState, today: DateKey, themesTried: ThemeI
   return {
     stats,
     xp,
-    activityXp,
+    activityXp: activityXp + combat.killXp,
     level,
     title: titleFor(level.level),
     cls: classFor(attrs),
@@ -244,6 +260,7 @@ export function computeGame(state: AppState, today: DateKey, themesTried: ThemeI
     achievements,
     unlockedCount: reached.size,
     freshIds: achievements.filter((v) => v.fresh).map((v) => v.a.id),
+    combat,
   }
 }
 

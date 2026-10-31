@@ -3,9 +3,14 @@ import { useToast } from '../components/ui/Toast'
 import { useStore } from '../state/store'
 import { useThemeCtx } from '../themes/vibe'
 import type { Achievement } from './achievements'
+import type { Monster } from './bestiary'
+import type { Item } from './loot'
 import { computeGame, type GameState } from './engine'
 
-export type Celebration = { kind: 'achievement'; a: Achievement } | { kind: 'level'; level: number; title: string }
+export type Celebration =
+  | { kind: 'achievement'; a: Achievement }
+  | { kind: 'level'; level: number; title: string }
+  | { kind: 'kill'; monster: Monster; drop: Item | null }
 
 interface GameCtxValue {
   game: GameState
@@ -23,16 +28,27 @@ export function GameProvider({ children }: { children: ReactNode }) {
   const { state, today, dispatch, sync, user } = useStore()
   const { prefs } = useThemeCtx()
   const toast = useToast()
-  const game = useMemo(() => computeGame(state, today, prefs.themesTried), [state, today, prefs.themesTried])
+  const game = useMemo(
+    () => computeGame(state, today, prefs.themesTried, prefs.equipped),
+    [state, today, prefs.themesTried, prefs.equipped],
+  )
   const [queue, setQueue] = useState<Celebration[]>([])
   const firstPass = useRef(true)
   const loaded = sync.status !== 'loading'
 
-  // Save newly reached achievements.
-  const freshKey = game.freshIds.join(',')
+  // Save newly reached achievements and kills (kills make loot permanent).
+  const freshKey = [...game.freshIds, ...game.combat.freshKills].join(',')
   useEffect(() => {
-    if (!loaded || game.freshIds.length === 0) return
-    dispatch({ type: 'milestones/unlock', ids: game.freshIds, today })
+    if (!loaded || (game.freshIds.length === 0 && game.combat.freshKills.length === 0)) return
+    dispatch({ type: 'milestones/unlock', ids: [...game.combat.freshKills, ...game.freshIds], today })
+
+    // Today's kills get their moment; old backlog kills are saved quietly.
+    const fights = [...game.combat.today.fights, ...(game.combat.week ? [game.combat.week.fight] : [])]
+    const kills = fights.filter((f) => game.combat.freshKills.includes(f.key))
+    if (!firstPass.current || kills.length <= 3) {
+      setQueue((q) => [...q, ...kills.map((f) => ({ kind: 'kill' as const, monster: f.monster, drop: f.drop }))])
+    }
+    if (game.freshIds.length === 0) return
     const fresh = game.achievements.filter((v) => v.fresh).map((v) => v.a)
     if (firstPass.current && fresh.length > 3) {
       // A backlog (first sign-in, an import, another device): one quiet note, not a fireworks storm.

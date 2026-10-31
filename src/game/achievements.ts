@@ -7,12 +7,13 @@
 import type { ThemeId } from '../themes/registry'
 import type { PlayerStats } from './stats'
 
-export type Category = 'habits' | 'body' | 'training' | 'mind' | 'gold' | 'explorer' | 'legend' | 'secret'
+export type Category = 'hunt' | 'habits' | 'body' | 'training' | 'mind' | 'gold' | 'explorer' | 'legend' | 'secret'
 export type Rarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary' | 'mythic'
 
 export const RARITIES: Rarity[] = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic']
 export const RARITY_XP: Record<Rarity, number> = { common: 20, uncommon: 50, rare: 100, epic: 250, legendary: 500, mythic: 1000 }
 export const CATEGORY_LABEL: Record<Category, string> = {
+  hunt: 'Hunt',
   habits: 'Habits',
   body: 'Meals',
   training: 'Training',
@@ -33,6 +34,7 @@ export interface GameCtx {
   boardsCleared: number
   habitTicksByName: (re: RegExp) => number
   bodyAndSoulDays: number
+  hunt: { kills: number; elites: number; bosses: number; bossKinds: Set<string>; items: number; epics: number; legendaries: number }
 }
 
 export interface Achievement {
@@ -67,6 +69,31 @@ const plural = (x: number, one: string, many = `${one}s`) => `${n(x)} ${x === 1 
 const dollars = (cents: number) => `$${n(cents / 100)}`
 
 const FAMILIES: Family[] = [
+  // ── Hunt ──────────────────────────────────────────────────────────────
+  { id: 'slayer', category: 'hunt', metric: (c) => c.hunt.kills, describe: (t) => `Slay ${plural(t, 'monster')}.`,
+    tiers: [[1, 'First Blood'], [10, 'Monster Hunter'], [25, 'Grave Cleaner'], [50, 'Crypt Breaker'], [100, 'Hundred Slain'], [250, 'Scourge of the Dead'], [500, 'Bane of Ravenmoor'], [1000, 'Thousand Graves']] },
+  { id: 'elite-slayer', category: 'hunt', metric: (c) => c.hunt.elites, describe: (t) => `Slay ${plural(t, 'elite')}.`,
+    tiers: [[1, 'Elite Hunter'], [5, "Champion's Mark"], [10, 'Knightfall'], [25, "Templar's Doom"], [50, 'Dread Breaker'], [100, 'Hundred Champions']] },
+  { id: 'boss-slayer', category: 'hunt', metric: (c) => c.hunt.bosses, describe: (t) => `Defeat ${plural(t, 'weekly boss', 'weekly bosses')}.`,
+    tiers: [[1, 'Bossfall'], [4, 'Month of Kings'], [12, 'Season of Crowns'], [26, 'Half-Year Reign'], [52, 'Kingslayer of the Year']] },
+  ...([
+    ['morcant', 'Hollow No More', 'Sir Morcant, the Hollow Knight'],
+    ['black-abbess', 'Abbess Unveiled', 'the Black Abbess'],
+    ['vargoth', 'Dragonbone Trophy', 'Vargoth the Bone Dragon'],
+    ['velmora', 'Dawn over Velmora', 'Countess Velmora'],
+    ['ravenmoor-lich', 'The Count Ends', 'the Lich of Ravenmoor'],
+    ['grimwald', 'Thorns Cut Down', 'Grimwald, Warden of Thorns'],
+  ] as const).map(([id, name, who]): Family => ({
+    id: `fell-${id}`, category: 'hunt', metric: (c) => (c.hunt.bossKinds.has(id) ? 1 : 0),
+    describe: () => `Defeat ${who}.`, tiers: [[1, name, 'epic']],
+  })),
+  { id: 'hoard', category: 'hunt', metric: (c) => c.hunt.items, describe: (t) => `Collect ${plural(t, 'item')} from drops.`,
+    tiers: [[1, 'First Loot'], [10, 'Pack Rat'], [25, 'Armoury'], [50, 'Treasury'], [100, 'Vault of Ravenmoor'], [250, 'The Great Hoard']] },
+  { id: 'epic-loot', category: 'hunt', metric: (c) => c.hunt.epics, describe: (t) => `Find ${plural(t, 'epic item')}.`,
+    tiers: [[1, 'Epic Find', 'rare'], [5, 'Collector of Dread', 'epic'], [10, 'Epic Armoury', 'legendary']] },
+  { id: 'legendary-loot', category: 'hunt', metric: (c) => c.hunt.legendaries, describe: (t) => `Find ${plural(t, 'legendary item')}.`,
+    tiers: [[1, 'Legend in Hand', 'epic'], [3, 'Myth Bearer', 'legendary'], [6, 'Living Legend of Loot', 'mythic']] },
+
   // ── Habits ────────────────────────────────────────────────────────────
   { id: 'ticks', category: 'habits', metric: (c) => c.stats.habitTicks, describe: (t) => `Tick off ${plural(t, 'habit')}.`,
     tiers: [[1, 'First Tick'], [10, 'Ten Down'], [25, 'Quarter Century'], [50, 'Half a Hundred'], [100, 'Centurion'], [250, 'Habit Engine'], [500, 'Five Hundred Strong'], [1000, 'The Thousand'], [2500, 'Relentless'], [5000, 'Living Ritual'], [10000, 'Ten Thousand Ticks']] },
@@ -173,7 +200,7 @@ const FAMILIES: Family[] = [
   ...([
     ['geek', 'Root Access'], ['bullet', 'Ink & Dots'], ['synthwave', 'Outrun'], ['manuscript', 'Illuminated'],
     ['brutalist', 'Concrete'], ['pocket', 'Insert Cartridge'], ['zen', 'Stillness'], ['blueprint', 'Drafted'],
-    ['retro', 'Plug and Play'], ['cottage', 'Wildflower'], ['kawaii', 'Sparkle Mode'], ['abyss', 'Into the Deep'],
+    ['retro', 'Plug and Play'], ['cottage', 'Wildflower'], ['kawaii', 'Sparkle Mode'], ['abyss', 'Into the Deep'], ['ravenmoor', 'Night Watch'],
   ] as const).map(([id, name]): Family => ({
     id: `theme-${id}`, category: 'explorer', metric: (c) => (c.themesTried.includes(id) ? 1 : 0),
     describe: () => `Switch to the ${id === 'pocket' ? 'Pocket 8-bit' : id === 'retro' ? 'Retro OS' : id === 'bullet' ? 'Bullet Journal' : id[0].toUpperCase() + id.slice(1)} theme.`,
@@ -190,7 +217,8 @@ const FAMILIES: Family[] = [
   { id: 'xp', category: 'legend', metric: (c) => c.totalXp, describe: (t) => `Earn ${n(t)} XP.`,
     tiers: [[1000, 'First Thousand'], [5000, 'Five Thousand'], [10000, 'Ten Thousand'], [25000, 'Experienced'], [50000, 'Veteran Adventurer'], [100000, 'Hundred Thousand'], [250000, 'Living Legend'], [500000, 'Half a Million']] },
   { id: 'collector', category: 'legend', metric: (c) => c.unlockedCount, describe: (t) => `Earn ${t} achievements.`,
-    tiers: [[10, 'Collector'], [25, 'Trophy Shelf'], [50, 'Trophy Room'], [100, 'Hall of Fame'], [150, 'Museum'], [200, 'Pantheon'], [250, 'Nearly There'], [299, 'Completionist']] },
+    // The last tier is "everything else"; it's set from the catalog size below.
+    tiers: [[10, 'Collector'], [25, 'Trophy Shelf'], [50, 'Trophy Room'], [100, 'Hall of Fame'], [150, 'Museum'], [200, 'Pantheon'], [300, 'Nearly There'], [-1, 'Completionist']] },
 
   // ── Secrets (hidden until earned) ─────────────────────────────────────
   ...([
@@ -213,6 +241,9 @@ const FAMILIES: Family[] = [
 
 const rarityAt = (i: number, count: number): Rarity =>
   count === 1 ? 'uncommon' : RARITIES[Math.min(5, Math.floor((i / count) * 6 + (count <= 4 ? 1 : 0)))]
+
+const TOTAL = FAMILIES.reduce((n, f) => n + f.tiers.length, 0)
+for (const f of FAMILIES) for (const t of f.tiers) if (t[0] === -1) t[0] = TOTAL - 1
 
 export const ACHIEVEMENTS: Achievement[] = FAMILIES.flatMap((f) =>
   f.tiers.map(([t, name, r], i) => {

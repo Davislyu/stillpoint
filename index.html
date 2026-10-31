@@ -22,8 +22,8 @@
         var mode = p.mode || localStorage.getItem('stillpoint:theme') || 'system';
         var theme = p.theme || 'stillpoint';
         var bgs = { geek: '#030603', bullet: '#f6f1e4', synthwave: '#12062b', manuscript: '#efe3c8', brutalist: '#efefe9',
-          pocket: '#9bbc0f', zen: '#f1efe9', blueprint: '#0d3b66', retro: '#008080', cottage: '#eef0e2', kawaii: '#fff0f6', abyss: '#020d1a' };
-        var darkThemes = { geek: 1, synthwave: 1, blueprint: 1, abyss: 1 };
+          pocket: '#9bbc0f', zen: '#f1efe9', blueprint: '#0d3b66', retro: '#008080', cottage: '#eef0e2', kawaii: '#fff0f6', abyss: '#020d1a', ravenmoor: '#0b0a0c' };
+        var darkThemes = { geek: 1, synthwave: 1, blueprint: 1, abyss: 1, ravenmoor: 1 };
         var dark = theme === 'stillpoint'
           ? mode === 'dark' || (mode === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)
           : !!darkThemes[theme];

@@ -14,6 +14,7 @@ import { Splash } from './auth/AuthGate'
 import { CalendarPanel } from './components/calendar/CalendarPanel'
 import { Celebration } from './components/game/Celebration'
 import { HeroPanel } from './components/game/HeroPanel'
+import { HuntPanel } from './components/game/HuntPanel'
 import { QuestBoard } from './components/game/QuestBoard'
 import { GameProvider } from './game/GameProvider'
 import { useAuthActions } from './auth/authActions'
@@ -72,6 +73,7 @@ export default function App() {
           <div className={`space-y-5 ${shown(view, 'today')}`}>
             <Greeting />
             <StatStrip />
+            <HuntPanel />
             <TodaysFocus />
             <QuestBoard />
             <HabitList date={selectedDay} onBackToToday={backToToday} />

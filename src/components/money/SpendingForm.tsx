@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { CATEGORIES, currencySymbol, looksEssential, parseAmountToCents } from '../../lib/money'
+import { CATEGORIES, looksEssential, parseAmountToCents, useMoney } from '../../lib/money'
 import { useStore } from '../../state/store'
 import type { SpendingCategory } from '../../state/types'
 import { Button } from '../ui/Button'
@@ -9,6 +9,7 @@ import { useToast } from '../ui/Toast'
 
 export function SpendingForm() {
   const { dispatch, today } = useStore()
+  const { symbol: currencySymbol } = useMoney()
   const toast = useToast()
   const [amount, setAmount] = useState('')
   const [description, setDescription] = useState('')
@@ -49,7 +50,7 @@ export function SpendingForm() {
         </Field>
         <Field label="Description">
           <Input
-            placeholder="Flat white"
+            placeholder="Cappuccino"
             maxLength={80}
             value={description}
             onChange={(e) => setDescription(e.target.value)}

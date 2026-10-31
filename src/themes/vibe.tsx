@@ -3,11 +3,33 @@ import { isThemeId, loadThemeCss, THEME_BY_ID, type ThemeDef, type ThemeId, type
 
 export type Mode = 'system' | 'light' | 'dark'
 
+export type Currency = 'ILS' | 'USD'
+export const CURRENCIES: { id: Currency; label: string; symbol: string }[] = [
+  { id: 'ILS', label: 'Israeli new shekel', symbol: '₪' },
+  { id: 'USD', label: 'US dollar', symbol: '$' },
+]
+
 export interface Preferences {
   theme: ThemeId
   mode: Mode
   /** Every theme ever applied; feeds a family of achievements. */
   themesTried: ThemeId[]
+  currency: Currency
+  /** Gear slot → equipped item id. Missing slots auto-equip the best item. */
+  equipped: Record<string, string>
+}
+
+const isCurrency = (v: unknown): v is Currency => v === 'ILS' || v === 'USD'
+
+/** Shekels for anyone in Israel or using Hebrew; dollars otherwise. */
+function defaultCurrency(): Currency {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+    if (tz === 'Asia/Jerusalem' || tz === 'Asia/Tel_Aviv' || navigator.language?.startsWith('he')) return 'ILS'
+  } catch {
+    /* ignore */
+  }
+  return 'USD'
 }
 
 const KEY = 'stillpoint:prefs'
@@ -19,13 +41,19 @@ function load(): Preferences {
   try {
     const p = JSON.parse(localStorage.getItem(KEY) ?? 'null')
     if (p && isThemeId(p.theme)) {
-      return { theme: p.theme, mode: p.mode ?? 'system', themesTried: (p.themesTried ?? []).filter(isThemeId) }
+      return {
+        theme: p.theme,
+        mode: p.mode ?? 'system',
+        themesTried: (p.themesTried ?? []).filter(isThemeId),
+        currency: isCurrency(p.currency) ? p.currency : defaultCurrency(),
+        equipped: p.equipped && typeof p.equipped === 'object' ? p.equipped : {},
+      }
     }
     const legacy = localStorage.getItem(LEGACY_MODE_KEY)
     const mode: Mode = legacy === 'light' || legacy === 'dark' ? legacy : 'system'
-    return { theme: 'stillpoint', mode, themesTried: ['stillpoint'] }
+    return { theme: 'stillpoint', mode, themesTried: ['stillpoint'], currency: defaultCurrency(), equipped: {} }
   } catch {
-    return { theme: 'stillpoint', mode: 'system', themesTried: ['stillpoint'] }
+    return { theme: 'stillpoint', mode: 'system', themesTried: ['stillpoint'], currency: 'USD', equipped: {} }
   }
 }
 
@@ -35,6 +63,10 @@ export function normalizePrefs(raw: unknown): Partial<Preferences> {
   if (isThemeId(r.theme)) out.theme = r.theme
   if (r.mode === 'light' || r.mode === 'dark' || r.mode === 'system') out.mode = r.mode
   if (Array.isArray(r.themesTried)) out.themesTried = r.themesTried.filter(isThemeId)
+  if (isCurrency(r.currency)) out.currency = r.currency
+  if (r.equipped && typeof r.equipped === 'object' && !Array.isArray(r.equipped)) {
+    out.equipped = Object.fromEntries(Object.entries(r.equipped).filter(([, v]) => typeof v === 'string')) as Record<string, string>
+  }
   return out
 }
 
@@ -62,6 +94,8 @@ interface ThemeCtx {
   vibe: Vibe
   setTheme: (id: ThemeId) => void
   setMode: (m: Mode) => void
+  setCurrency: (c: Currency) => void
+  equip: (slot: string, itemId: string | null) => void
   /** Merge preferences loaded from the account (another device's choice). */
   adopt: (remote: Partial<Preferences>) => void
   /** The signed-in store registers here to save preference changes to the account. */
@@ -112,12 +146,22 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       setTheme: (id) =>
         update((p) => ({ ...p, theme: id, themesTried: p.themesTried.includes(id) ? p.themesTried : [...p.themesTried, id] })),
       setMode: (mode) => update((p) => ({ ...p, mode })),
+      setCurrency: (currency) => update((p) => ({ ...p, currency })),
+      equip: (slot, itemId) =>
+        update((p) => {
+          const equipped = { ...p.equipped }
+          if (itemId) equipped[slot] = itemId
+          else delete equipped[slot]
+          return { ...p, equipped }
+        }),
       adopt: (remote) =>
         update(
           (p) => ({
             theme: remote.theme ?? p.theme,
             mode: remote.mode ?? p.mode,
             themesTried: [...new Set([...p.themesTried, ...(remote.themesTried ?? [])])],
+            currency: remote.currency ?? p.currency,
+            equipped: { ...p.equipped, ...(remote.equipped ?? {}) },
           }),
           false,
         ),
