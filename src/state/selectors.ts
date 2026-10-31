@@ -50,6 +50,47 @@ export function currentStreak(s: AppState, today: DateKey): number {
   return streak
 }
 
+export const SHIELD_EVERY = 7
+export const MAX_SHIELDS = 2
+
+export interface StreakInfo {
+  streak: number
+  /** Shields banked right now (earned every 7th streak day, at most 2). */
+  shields: number
+  /** Days a shield quietly saved the streak. */
+  savedDays: DateKey[]
+  /** The most recent time a streak ended, and how long it was. */
+  lastBreak: { date: DateKey; lost: number } | null
+}
+
+/**
+ * The streak you see: like currentStreak, but a missed day spends a banked
+ * shield instead of resetting to zero. Derived from history, nothing stored.
+ */
+export function streakInfo(s: AppState, today: DateKey): StreakInfo {
+  const info: StreakInfo = { streak: 0, shields: 0, savedDays: [], lastBreak: null }
+  const first = s.habits.reduce<DateKey | null>((a, h) => (a === null || h.createdOn < a ? h.createdOn : a), null)
+  if (!first || first > today) return info
+  let day = first
+  for (let i = 0; i < 3650 && day <= today; i++, day = addDays(day, 1)) {
+    const c = completionOn(s, day)
+    if (qualifies(c)) {
+      info.streak++
+      if (info.streak % SHIELD_EVERY === 0 && info.shields < MAX_SHIELDS) info.shields++
+    } else if (day === today || c.share === null) {
+      // today is still in progress, and days with nothing tracked are neutral
+    } else if (info.streak > 0) {
+      if (info.shields > 0) {
+        info.shields--
+        info.savedDays.push(day)
+      } else {
+        info.lastBreak = { date: day, lost: info.streak }
+        info.streak = 0
+      }
+    }
+  }
+  return info
+}
 
 // ── Meals ───────────────────────────────────────────────────────────────
 

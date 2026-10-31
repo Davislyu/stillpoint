@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { startOfWeek } from '../../lib/date'
-import { completionOn, currentStreak, mealsDone, workoutsInWeek } from '../../state/selectors'
+import { completionOn, mealsDone, streakInfo, workoutsInWeek } from '../../state/selectors'
 import { useStore } from '../../state/store'
 import { WORKOUTS_PER_WEEK } from '../../state/types'
 
@@ -26,7 +26,7 @@ function Stat({ label, value, unit, note }: { label: string; value: ReactNode; u
 export function StatStrip() {
   const { state, today } = useStore()
   const { done, total } = completionOn(state, today)
-  const streak = currentStreak(state, today)
+  const { streak, shields } = streakInfo(state, today)
   const meals = mealsDone(state, today)
   const workouts = workoutsInWeek(state, startOfWeek(today))
 
@@ -34,7 +34,13 @@ export function StatStrip() {
     <dl className="stat-strip grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-4">
       <div className="bg-surface"><Stat label="Habits left today" value={total - done} unit={`of ${total}`} /></div>
       <div className="bg-surface">
-        <Stat label="Current streak" value={streak} unit={streak === 1 ? 'day' : 'days'} note="Days at half or more" />
+        <Stat label="Current streak" value={streak} unit={streak === 1 ? 'day' : 'days'} note={
+            <span title="Every 7th streak day earns a shield. A missed day spends one instead of ending your streak.">
+              {'🛡'.repeat(shields) || 'Half or more counts'}
+              {shields > 0 && ` ${shields} ${shields === 1 ? 'shield' : 'shields'}`}
+            </span>
+          }
+        />
       </div>
       <div className="bg-surface"><Stat label="Meals today" value={meals} unit="of 5" /></div>
       <div className="bg-surface">

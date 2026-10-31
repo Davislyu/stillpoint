@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useInstall } from '../../hooks/useInstall'
 import { aurasFor, AURA_BY_ID, layoutFromAura, type Layout } from '../../dashboard/layout'
 import { useStore } from '../../state/store'
 import { useThemeCtx } from '../../themes/vibe'
@@ -8,7 +9,10 @@ import { AuraCard, LayoutEditor } from './AuraPicker'
 /** Change aura or panel visibility after onboarding. Changes apply live. */
 export default function CustomizeDialog({ onClose }: { onClose: () => void }) {
   const { user } = useStore()
-  const { prefs, setLayout, setTheme } = useThemeCtx()
+  const { prefs, setLayout, setTheme, setReminder } = useThemeCtx()
+  const install = useInstall()
+  const [permNote, setPermNote] = useState('')
+  const rem = prefs.reminder
   const [layout, setDraft] = useState<Layout>(() => prefs.layout ?? layoutFromAura(AURA_BY_ID['quiet-wanderer'], user.id))
 
   const change = (l: Layout) => {
@@ -63,6 +67,59 @@ export default function CustomizeDialog({ onClose }: { onClose: () => void }) {
           </div>
           <h3 className="mt-6 mb-2 text-[13px] text-ink-2">Panels</h3>
           <LayoutEditor layout={layout} onChange={change} />
+
+          <h3 className="mt-6 mb-2 text-[13px] text-ink-2">Evening reminder</h3>
+          <div className="rounded-2xl border border-line bg-surface px-4 py-3">
+            <div className="flex items-center gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm text-ink">Nudge me about unfinished habits</p>
+                <p className="text-[12px] leading-snug text-muted">Shows while Stillpoint is open or installed. Phones don't wake a closed web app.</p>
+              </div>
+              <input
+                type="time"
+                aria-label="Reminder time"
+                value={rem.time}
+                disabled={!rem.enabled}
+                onChange={(e) => e.target.value && setReminder({ ...rem, time: e.target.value })}
+                className="field h-10 rounded-lg border border-line bg-surface-2 px-2 text-sm text-ink disabled:opacity-40"
+              />
+              <button
+                type="button"
+                role="switch"
+                aria-checked={rem.enabled}
+                aria-label="Evening reminder"
+                onClick={async () => {
+                  const next = !rem.enabled
+                  setPermNote('')
+                  if (next && 'Notification' in window && Notification.permission === 'default') {
+                    const r = await Notification.requestPermission().catch(() => 'denied')
+                    if (r !== 'granted') setPermNote('Notifications are off for this site, so the reminder will appear inside the app instead.')
+                  }
+                  setReminder({ ...rem, enabled: next })
+                }}
+                className={`relative h-7 w-12 shrink-0 rounded-full transition-colors duration-200 ${rem.enabled ? 'bg-ink' : 'bg-surface-2 ring-1 ring-line-strong ring-inset'}`}
+              >
+                <span className={`absolute top-1 left-1 size-5 rounded-full bg-bg shadow transition-transform duration-200 ${rem.enabled ? 'translate-x-5' : ''}`} />
+              </button>
+            </div>
+            {permNote && <p className="mt-2 text-[12px] text-muted">{permNote}</p>}
+          </div>
+
+          {!install.installed && (install.canPrompt || install.iosHint) && (
+            <>
+              <h3 className="mt-6 mb-2 text-[13px] text-ink-2">Home screen</h3>
+              <div className="flex items-center gap-3 rounded-2xl border border-line bg-surface px-4 py-3">
+                <p className="min-w-0 flex-1 text-sm text-ink-2">
+                  {install.canPrompt ? 'Install Stillpoint for one-tap logging from your home screen.' : 'On iPhone: tap Share, then Add to Home Screen.'}
+                </p>
+                {install.canPrompt && (
+                  <Button variant="primary" size="sm" onClick={() => void install.install()}>
+                    Install
+                  </Button>
+                )}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

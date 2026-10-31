@@ -1,6 +1,6 @@
 // App-shell service worker. Same-origin static files only: requests to
 // Supabase (auth, data, realtime) are never intercepted or cached.
-const CACHE = 'stillpoint-shell-v2'
+const CACHE = 'stillpoint-shell-v3'
 const SHELL = ['/', '/manifest.webmanifest', '/icon.svg', '/icon-192.png']
 
 self.addEventListener('install', (e) => {
@@ -47,4 +47,15 @@ self.addEventListener('fetch', (e) => {
       ),
     )
   }
+})
+
+// Tapping a reminder opens (or focuses) the app.
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close()
+  e.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      for (const c of list) if ('focus' in c) return c.focus()
+      return self.clients.openWindow('/')
+    }),
+  )
 })

@@ -10,6 +10,35 @@ export const CURRENCIES: { id: Currency; label: string; symbol: string }[] = [
   { id: 'USD', label: 'US dollar', symbol: '$' },
 ]
 
+export interface WeeklyGoals {
+  workouts: number
+  habitDays: number
+  noSpendDays: number
+}
+export const DEFAULT_GOALS: WeeklyGoals = { workouts: 4, habitDays: 5, noSpendDays: 3 }
+
+export interface Reminder {
+  enabled: boolean
+  /** Local time, "HH:MM". */
+  time: string
+}
+export const DEFAULT_REMINDER: Reminder = { enabled: false, time: '20:00' }
+
+const clampInt = (v: unknown, min: number, max: number, d: number) =>
+  typeof v === 'number' && Number.isFinite(v) ? Math.min(max, Math.max(min, Math.round(v))) : d
+const normGoals = (g: unknown): WeeklyGoals => {
+  const r = (g ?? {}) as Partial<WeeklyGoals>
+  return {
+    workouts: clampInt(r.workouts, 1, 4, DEFAULT_GOALS.workouts),
+    habitDays: clampInt(r.habitDays, 1, 7, DEFAULT_GOALS.habitDays),
+    noSpendDays: clampInt(r.noSpendDays, 0, 7, DEFAULT_GOALS.noSpendDays),
+  }
+}
+const normReminder = (g: unknown): Reminder => {
+  const r = (g ?? {}) as Partial<Reminder>
+  return { enabled: r.enabled === true, time: typeof r.time === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(r.time) ? r.time : DEFAULT_REMINDER.time }
+}
+
 export interface Preferences {
   theme: ThemeId
   mode: Mode
@@ -20,6 +49,9 @@ export interface Preferences {
   equipped: Record<string, string>
   /** Dashboard layout chosen at onboarding; null until the person picks an aura. */
   layout: Layout | null
+  /** Weekly targets the person sets for themselves. */
+  goals: WeeklyGoals
+  reminder: Reminder
 }
 
 const isCurrency = (v: unknown): v is Currency => v === 'ILS' || v === 'USD'
@@ -51,13 +83,15 @@ function load(): Preferences {
         currency: isCurrency(p.currency) ? p.currency : defaultCurrency(),
         equipped: p.equipped && typeof p.equipped === 'object' ? p.equipped : {},
         layout: normalizeLayout(p.layout),
+        goals: normGoals(p.goals),
+        reminder: normReminder(p.reminder),
       }
     }
     const legacy = localStorage.getItem(LEGACY_MODE_KEY)
     const mode: Mode = legacy === 'light' || legacy === 'dark' ? legacy : 'system'
-    return { theme: 'stillpoint', mode, themesTried: ['stillpoint'], currency: defaultCurrency(), equipped: {}, layout: null }
+    return { theme: 'stillpoint', mode, themesTried: ['stillpoint'], currency: defaultCurrency(), equipped: {}, layout: null, goals: DEFAULT_GOALS, reminder: DEFAULT_REMINDER }
   } catch {
-    return { theme: 'stillpoint', mode: 'system', themesTried: ['stillpoint'], currency: 'USD', equipped: {}, layout: null }
+    return { theme: 'stillpoint', mode: 'system', themesTried: ['stillpoint'], currency: 'USD', equipped: {}, layout: null, goals: DEFAULT_GOALS, reminder: DEFAULT_REMINDER }
   }
 }
 
@@ -73,6 +107,8 @@ export function normalizePrefs(raw: unknown): Partial<Preferences> {
   }
   const layout = normalizeLayout((r as { layout?: unknown }).layout)
   if (layout) out.layout = layout
+  if ((r as { goals?: unknown }).goals) out.goals = normGoals((r as { goals?: unknown }).goals)
+  if ((r as { reminder?: unknown }).reminder) out.reminder = normReminder((r as { reminder?: unknown }).reminder)
   return out
 }
 
@@ -103,6 +139,8 @@ interface ThemeCtx {
   setCurrency: (c: Currency) => void
   equip: (slot: string, itemId: string | null) => void
   setLayout: (layout: Layout) => void
+  setGoals: (goals: WeeklyGoals) => void
+  setReminder: (reminder: Reminder) => void
   /** Id of the account whose preferences have been loaded (null before sign-in loads). */
   loadedFor: string | null
   /** Merge preferences loaded from the account (another device's choice). */
@@ -165,6 +203,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
           return { ...p, equipped }
         }),
       setLayout: (layout) => update((p) => ({ ...p, layout })),
+      setGoals: (goals) => update((p) => ({ ...p, goals: normGoals(goals) })),
+      setReminder: (reminder) => update((p) => ({ ...p, reminder: normReminder(reminder) })),
       loadedFor,
       adopt: (remote, owner) => {
         setLoadedFor(owner)
@@ -177,6 +217,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
             equipped: { ...p.equipped, ...(remote.equipped ?? {}) },
             // The account's layout wins; a layout cached on this device only counts if it is this account's.
             layout: remote.layout ?? (p.layout?.owner === owner ? p.layout : null),
+            goals: remote.goals ?? p.goals,
+            reminder: remote.reminder ?? p.reminder,
           }),
           false,
         )

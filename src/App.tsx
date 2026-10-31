@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { MealLog } from './components/body/MealLog'
 import { WorkoutTracker } from './components/body/WorkoutTracker'
 import { Greeting } from './components/dashboard/Greeting'
@@ -17,6 +17,9 @@ import { Splash } from './auth/AuthGate'
 import { CalendarPanel } from './components/calendar/CalendarPanel'
 import { Celebration } from './components/game/Celebration'
 import { HeroPanel } from './components/game/HeroPanel'
+import { FirstWeek } from './components/dashboard/FirstWeek'
+import { useReminder } from './hooks/useReminder'
+import { WeekPanel } from './components/dashboard/WeekPanel'
 import { HuntPanel } from './components/game/HuntPanel'
 import { QuestBoard } from './components/game/QuestBoard'
 import { GameProvider } from './game/GameProvider'
@@ -26,7 +29,8 @@ import { SyncEngine } from './data/syncEngine'
 import { useStore } from './state/store'
 import type { DateKey } from './state/types'
 
-const MAIN: PanelId[] = ['stats', 'hunt', 'focus', 'quests', 'habits', 'history', 'notes']
+const QuickLog = lazy(() => import('./components/dashboard/QuickLog'))
+const MAIN: PanelId[] = ['stats', 'week', 'hunt', 'focus', 'quests', 'habits', 'history', 'notes']
 const ASIDE: PanelId[] = ['hero', 'calendar', 'meals', 'workouts', 'spending']
 
 export default function App() {
@@ -37,6 +41,8 @@ export default function App() {
   const [view, setView] = useState<View>('today')
   const [selectedDay, setSelectedDay] = useState<DateKey>(today)
   const backToToday = () => setSelectedDay(today)
+  const [quick, setQuick] = useState(false)
+  useReminder()
 
   // Snap back to today after midnight.
   useEffect(() => setSelectedDay(today), [today])
@@ -76,6 +82,16 @@ export default function App() {
   useEffect(() => {
     if (!tabs.includes(view)) setView('today')
   }, [tabs.join(), view]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Home-screen shortcuts: /?view=body, /?view=money, /?quick=1
+  useEffect(() => {
+    if (!sync.ready || !layout) return
+    const q = new URLSearchParams(window.location.search)
+    const v = q.get('view')
+    if (v && (tabs as string[]).includes(v)) setView(v as View)
+    if (q.get('quick') === '1') setQuick(true)
+    if (v || q.has('quick')) window.history.replaceState(null, '', window.location.pathname)
+  }, [sync.ready, !!layout]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!sync.ready) {
     if (!sync.loadError) return <Splash />
@@ -118,6 +134,8 @@ export default function App() {
     switch (id) {
       case 'stats':
         return <StatStrip />
+      case 'week':
+        return <WeekPanel />
       case 'hunt':
         return <HuntPanel />
       case 'focus':
@@ -166,6 +184,9 @@ export default function App() {
             <div className={view === 'today' ? '' : 'hidden lg:block'}>
               <Greeting />
             </div>
+            <div className={view === 'today' ? '' : 'hidden'}>
+              <FirstWeek />
+            </div>
             {featured && wrap(featured, panel(featured))}
             {MAIN.filter(on).map((id) => wrap(id, panel(id)))}
           </div>
@@ -175,6 +196,25 @@ export default function App() {
             </aside>
           )}
         </main>
+        <button
+          type="button"
+          onClick={() => setQuick(true)}
+          aria-label="Quick log"
+          className="btn btn-primary fixed right-4 bottom-[calc(6.25rem+env(safe-area-inset-bottom))] z-20 grid size-14 place-items-center rounded-full bg-ink text-2xl text-bg shadow-[0_10px_30px_-8px_rgba(0,0,0,0.55)] transition-transform duration-150 select-none active:scale-90 lg:right-8 lg:bottom-8"
+        >
+          <span aria-hidden="true" className="-mt-0.5 leading-none">+</span>
+        </button>
+        {quick && (
+          <Suspense fallback={null}>
+            <QuickLog
+              onClose={() => setQuick(false)}
+              onSpend={() => {
+                setQuick(false)
+                if (!hidden.has('spending')) changeView('money')
+              }}
+            />
+          </Suspense>
+        )}
         <MobileNav view={view} tabs={tabs} onChange={changeView} />
       </div>
     </GameProvider>

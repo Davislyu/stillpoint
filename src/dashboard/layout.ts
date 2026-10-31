@@ -4,6 +4,7 @@ import type { AccentId } from '../state/types'
 /** Every section of the dashboard a person can show or hide. */
 export type PanelId =
   | 'stats'
+  | 'week'
   | 'hunt'
   | 'focus'
   | 'quests'
@@ -21,6 +22,7 @@ export type Tab = 'today' | 'body' | 'notes' | 'money' | 'hero'
 export const PANELS: { id: PanelId; label: string; hint: string; tab: Tab }[] = [
   { id: 'habits', label: 'Daily habits', hint: 'Tick off the things you do every day.', tab: 'today' },
   { id: 'stats', label: 'Stats strip', hint: 'Streak, meals and workouts at a glance.', tab: 'today' },
+  { id: 'week', label: 'This week', hint: 'Goals you set, plus a recap of the week to share.', tab: 'today' },
   { id: 'hunt', label: 'The hunt', hint: 'Gothic monsters that your effort slays. Loot drops.', tab: 'today' },
   { id: 'focus', label: "Today's focus", hint: 'One habit suggested for right now.', tab: 'today' },
   { id: 'quests', label: 'Daily quests', hint: 'Three small challenges a day for bonus XP.', tab: 'today' },
