@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#f2f3f2" />
+    <meta name="description" content="Habits, meals, workouts, notes and extra spending, kept in sync across your devices." />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Stillpoint" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <title>Stillpoint</title>
+    <script>
+      // Apply the saved theme before first paint to avoid a flash.
+      // Apply the saved theme before first paint so there's no flash of the default.
+      try {
+        var p = JSON.parse(localStorage.getItem('stillpoint:prefs') || 'null') || {};
+        var mode = p.mode || localStorage.getItem('stillpoint:theme') || 'system';
+        var theme = p.theme || 'stillpoint';
+        var bgs = { geek: '#030603', bullet: '#f6f1e4', synthwave: '#12062b', manuscript: '#efe3c8', brutalist: '#efefe9',
+          pocket: '#9bbc0f', zen: '#f1efe9', blueprint: '#0d3b66', retro: '#008080', cottage: '#eef0e2', kawaii: '#fff0f6', abyss: '#020d1a' };
+        var darkThemes = { geek: 1, synthwave: 1, blueprint: 1, abyss: 1 };
+        var dark = theme === 'stillpoint'
+          ? mode === 'dark' || (mode === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)
+          : !!darkThemes[theme];
+        var root = document.documentElement;
+        root.classList.toggle('dark', dark);
+        if (theme !== 'stillpoint') { root.setAttribute('data-theme', theme); root.style.backgroundColor = bgs[theme]; }
+        document.querySelector('meta[name="theme-color"]').setAttribute('content', bgs[theme] || (dark ? '#0e1114' : '#f2f3f2'));
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <!-- Shared SVG filters used by themes (hand-drawn wobble for Bullet Journal). -->
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true" focusable="false">
+      <filter id="sp-sketch" x="-5%" y="-5%" width="110%" height="110%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="7" result="noise" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.6" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </svg>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

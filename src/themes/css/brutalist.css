@@ -1,0 +1,41 @@
+@import '@fontsource/archivo-black/latin-400.css';
+@import '@fontsource/space-grotesk/latin-400.css';
+@import '@fontsource/space-grotesk/latin-700.css';
+
+/* Brutalist: no radius anywhere, 3px black rules, hard offset shadows, shouty type. */
+[data-theme='brutalist'] {
+  color-scheme: light;
+  --bg: #efefe9;
+  --surface: #ffffff;
+  --surface-2: #e4e4dc;
+  --line: #000000;
+  --line-strong: #000000;
+  --ink: #000000;
+  --ink-2: #111111;
+  --muted: #3d3d3d;
+  --accent-sage: #00b86b; --accent-sage-soft: #c7f5dd;
+  --accent-dusk: #2b50ff; --accent-dusk-soft: #d3dbff;
+  --accent-mauve: #ff5cc8; --accent-mauve-soft: #ffd6f1;
+  --accent-sand: #ffe500; --accent-sand-soft: #fff6a8;
+  --accent-teal: #00c2c7; --accent-teal-soft: #c9f4f5;
+  --accent-clay: #ff3b1f; --accent-clay-soft: #ffd2c9;
+  --font-display: 'Archivo Black', Impact, sans-serif;
+  --font-sans: 'Space Grotesk', ui-sans-serif, sans-serif;
+  --radius-2xl: 0; --radius-xl: 0; --radius-lg: 0; --radius-md: 0;
+  background-color: var(--bg);
+}
+[data-theme='brutalist'] .rounded-full { border-radius: 0 !important; }
+[data-theme='brutalist'] .panel { border: 3px solid #000 !important; box-shadow: 7px 7px 0 #000; }
+[data-theme='brutalist'] .panel-title { text-transform: uppercase; font-size: 1.15rem !important; letter-spacing: 0 !important; }
+[data-theme='brutalist'] .hero-title { text-transform: uppercase; letter-spacing: -0.02em !important; font-weight: 400 !important; }
+[data-theme='brutalist'] .stat-strip { border: 3px solid #000 !important; box-shadow: 7px 7px 0 #000; background: #000 !important; gap: 3px !important; }
+[data-theme='brutalist'] .stat-value { font-weight: 400 !important; }
+[data-theme='brutalist'] .btn { border: 3px solid #000 !important; font-weight: 700; text-transform: uppercase; }
+[data-theme='brutalist'] .btn-primary { background: var(--accent-sand) !important; color: #000 !important; box-shadow: 4px 4px 0 #000; }
+[data-theme='brutalist'] .btn-primary:active { transform: translate(3px, 3px) !important; box-shadow: 1px 1px 0 #000; }
+[data-theme='brutalist'] .check { border-width: 3px !important; border-color: #000 !important; }
+[data-theme='brutalist'] .col { border: 3px solid #000 !important; }
+[data-theme='brutalist'] .col-fill { background: #000 !important; }
+[data-theme='brutalist'] .focus-card { border: 3px solid #000; box-shadow: 7px 7px 0 #000; }
+[data-theme='brutalist'] .field { border: 3px solid #000; background: #fff; }
+[data-theme='brutalist'] .toast { background: var(--accent-sand) !important; color: #000 !important; border: 3px solid #000 !important; box-shadow: 4px 4px 0 #000; font-weight: 700; text-transform: uppercase; }

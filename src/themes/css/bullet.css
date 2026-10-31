@@ -1,0 +1,61 @@
+@import '@fontsource/caveat/latin-600.css';
+@import '@fontsource/caveat/latin-700.css';
+@import '@fontsource/patrick-hand/latin-400.css';
+
+/* Bullet journal: dot-grid paper, ballpoint ink, wobbly hand-drawn boxes, highlighter. */
+[data-theme='bullet'] {
+  color-scheme: light;
+  --bg: #f6f1e4;
+  --surface: rgb(255 253 246 / 0.72);
+  --surface-2: #ece5d2;
+  --line: #b8b09c;
+  --line-strong: #6d6a63;
+  --ink: #22314f;
+  --ink-2: #3b4a6b;
+  --muted: #7c8290;
+  --accent-sage: #7fb174; --accent-sage-soft: #e1f0c8;
+  --accent-dusk: #6f9bd1; --accent-dusk-soft: #d8e6f6;
+  --accent-mauve: #d98cb3; --accent-mauve-soft: #f6dcea;
+  --accent-sand: #e3b740; --accent-sand-soft: #faeec3;
+  --accent-teal: #5fb3a8; --accent-teal-soft: #d5eeea;
+  --accent-clay: #e08e6d; --accent-clay-soft: #f8dccf;
+  --font-display: 'Caveat', 'Segoe Print', cursive;
+  --font-sans: 'Patrick Hand', 'Segoe Print', cursive;
+  --radius-2xl: 6px; --radius-xl: 5px; --radius-lg: 4px;
+  background-color: var(--bg);
+  background-image: radial-gradient(circle, #c4bba6 1.1px, transparent 1.4px);
+  background-size: 22px 22px;
+  font-size: 17px;
+}
+/* Borders are drawn by a pseudo-element run through an SVG wobble filter, so text stays crisp. */
+[data-theme='bullet'] .panel { border-color: transparent !important; position: relative; }
+[data-theme='bullet'] .panel::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  border: 1.8px solid var(--ink); border-radius: 7px; filter: url(#sp-sketch); opacity: 0.85;
+}
+[data-theme='bullet'] .panel:nth-of-type(odd) { transform: rotate(-0.25deg); }
+[data-theme='bullet'] .panel:nth-of-type(even) { transform: rotate(0.2deg); }
+[data-theme='bullet'] .panel-title {
+  font-size: 1.7rem !important; font-weight: 700 !important; letter-spacing: 0 !important; display: inline;
+  background: linear-gradient(transparent 58%, var(--accent-sand-soft) 58%, var(--accent-sand-soft) 90%, transparent 90%);
+  padding: 0 0.15em;
+}
+[data-theme='bullet'] .hero-title { font-size: clamp(3rem, 8vw, 5rem) !important; font-weight: 700 !important; letter-spacing: 0 !important; transform: rotate(-1deg); }
+[data-theme='bullet'] .hero-title::after {
+  content: ''; display: block; height: 10px; width: 60%; margin-top: 2px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 10' preserveAspectRatio='none'%3E%3Cpath d='M2 6 C 30 1, 50 9, 80 5 S 140 2, 198 6' fill='none' stroke='%2322314f' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat center / 100% 100%;
+}
+[data-theme='bullet'] .stat-value { font-family: var(--font-display); font-size: 2.6rem !important; font-weight: 700 !important; }
+[data-theme='bullet'] .stat-strip { background: transparent !important; border-style: dashed !important; border-color: var(--line-strong) !important; }
+[data-theme='bullet'] .stat-strip > div { background: transparent !important; border-right: 1.5px dashed var(--line); }
+[data-theme='bullet'] .check { border-radius: 3px !important; border-color: var(--ink) !important; filter: url(#sp-sketch); }
+[data-theme='bullet'] .check[data-done='true'] { background: transparent !important; color: var(--ink); }
+[data-theme='bullet'] .check[data-done='true'] svg { color: var(--ink) !important; stroke-width: 3; }
+[data-theme='bullet'] .btn { filter: url(#sp-sketch); font-size: 1.05rem; }
+[data-theme='bullet'] .btn-primary { background: transparent !important; color: var(--ink) !important; border: 2px solid var(--ink); }
+[data-theme='bullet'] .btn-primary:hover { background: var(--accent-sand-soft) !important; }
+[data-theme='bullet'] .col { border-color: var(--ink) !important; filter: url(#sp-sketch); background: transparent !important; }
+[data-theme='bullet'] .col-fill { background: repeating-linear-gradient(45deg, var(--ink) 0 1.5px, transparent 1.5px 5px) !important; }
+[data-theme='bullet'] .field { background: transparent; border-width: 0 0 1.5px 0; border-radius: 0; border-color: var(--ink-2); }
+[data-theme='bullet'] .focus-card { border: 1.8px dashed var(--ink); transform: rotate(0.4deg); }
+[data-theme='bullet'] .toast { background: #fff7d1 !important; color: var(--ink) !important; transform: rotate(-1.5deg); border-color: var(--ink) !important; font-family: var(--font-display); font-size: 1.3rem; }

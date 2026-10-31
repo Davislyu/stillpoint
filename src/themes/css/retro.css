@@ -1,0 +1,60 @@
+@import '@fontsource/pixelify-sans/latin-400.css';
+@import '@fontsource/pixelify-sans/latin-600.css';
+
+/* Retro OS: a teal desktop, grey beveled windows with gradient title bars. */
+[data-theme='retro'] {
+  color-scheme: light;
+  --bg: #008080;
+  --surface: #c0c0c0;
+  --surface-2: #dfdfdf;
+  --line: #808080;
+  --line-strong: #000000;
+  --ink: #000000;
+  --ink-2: #1a1a1a;
+  --muted: #4a4a4a;
+  --accent-sage: #008000; --accent-sage-soft: #c0dcc0;
+  --accent-dusk: #000080; --accent-dusk-soft: #c0c8e0;
+  --accent-mauve: #800080; --accent-mauve-soft: #dcc0dc;
+  --accent-sand: #808000; --accent-sand-soft: #e0e0b8;
+  --accent-teal: #008080; --accent-teal-soft: #b8e0e0;
+  --accent-clay: #800000; --accent-clay-soft: #e0c0c0;
+  --font-display: 'Pixelify Sans', Tahoma, sans-serif;
+  --font-sans: Tahoma, Verdana, 'Segoe UI', sans-serif;
+  --radius-2xl: 0; --radius-xl: 0; --radius-lg: 0; --radius-md: 0;
+  background-color: var(--bg);
+  font-size: 14px;
+}
+[data-theme='retro'] .rounded-full { border-radius: 0 !important; }
+[data-theme='retro'] .panel, [data-theme='retro'] .stat-strip, [data-theme='retro'] .focus-card {
+  border: 2px solid !important; border-color: #fff #404040 #404040 #fff !important;
+  box-shadow: inset -1px -1px #808080, inset 1px 1px #dfdfdf, 2px 2px 0 rgb(0 0 0 / 0.25);
+  padding-top: 0 !important;
+}
+[data-theme='retro'] .panel > header { margin: 0 -1.25rem 0.75rem; }
+@media (min-width: 640px) { [data-theme='retro'] .panel > header { margin: 0 -1.5rem 0.75rem; } }
+[data-theme='retro'] .panel-title {
+  display: block; position: relative; margin-top: 3px; margin-inline: 3px;
+  background: linear-gradient(90deg, #000080, #1084d0); color: #fff !important;
+  padding: 3px 60px 3px 8px; font-size: 0.95rem !important; letter-spacing: 0 !important;
+}
+[data-theme='retro'] .panel-title::after {
+  content: '_  \25A1  \2715'; position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  font-size: 0.7rem; background: #c0c0c0; color: #000; padding: 0 4px; border: 1px solid; border-color: #fff #404040 #404040 #fff;
+}
+[data-theme='retro'] .panel-hint { padding-inline: 1.25rem; }
+[data-theme='retro'] .panel > header > div:last-child { padding-right: 1rem; }
+[data-theme='retro'] .hero-title { color: #fff !important; text-shadow: 2px 2px 0 #004040; letter-spacing: 0 !important; }
+[data-theme='retro'] .hero-title + p, [data-theme='retro'] header > p { color: #e0ffff !important; }
+[data-theme='retro'] .stat-strip { background: #808080 !important; }
+[data-theme='retro'] .stat-strip > div { background: #c0c0c0 !important; }
+[data-theme='retro'] .btn { border: 2px solid !important; border-color: #fff #404040 #404040 #fff !important; background: #c0c0c0 !important; color: #000 !important; box-shadow: inset -1px -1px #808080; }
+[data-theme='retro'] .btn:active { border-color: #404040 #fff #fff #404040 !important; }
+[data-theme='retro'] .btn-primary { font-weight: 700; outline: 1px solid #000; }
+[data-theme='retro'] .field { border: 2px solid; border-color: #404040 #fff #fff #404040; background: #fff; }
+[data-theme='retro'] .check { border-radius: 0 !important; border: 2px solid !important; border-color: #404040 #fff #fff #404040 !important; background: #fff !important; }
+[data-theme='retro'] .check[data-done='true'] svg { color: #000 !important; }
+[data-theme='retro'] .col { border: 2px solid !important; border-color: #404040 #fff #fff #404040 !important; background: #fff !important; }
+[data-theme='retro'] .col-fill { background: repeating-linear-gradient(90deg, #000080 0 8px, transparent 8px 10px) !important; }
+[data-theme='retro'] .tabbar { background: #c0c0c0 !important; border-top: 2px solid #fff !important; }
+[data-theme='retro'] .toast { background: #ffffe1 !important; color: #000 !important; border: 1px solid #000 !important; }
+[data-theme='retro'] .panel > header > div:first-child { flex: 1; }

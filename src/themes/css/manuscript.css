@@ -1,0 +1,43 @@
+@import '@fontsource/im-fell-english/latin-400.css';
+@import '@fontsource/im-fell-english/latin-400-italic.css';
+@import '@fontsource/eb-garamond/latin-400.css';
+@import '@fontsource/eb-garamond/latin-600.css';
+
+/* Manuscript: parchment, iron-gall ink, double rules, ornaments and a drop cap. */
+[data-theme='manuscript'] {
+  color-scheme: light;
+  --bg: #efe3c8;
+  --surface: rgb(250 242 222 / 0.62);
+  --surface-2: #e6d6b3;
+  --line: #c9b48c;
+  --line-strong: #8a7353;
+  --ink: #2b1d0e;
+  --ink-2: #4e3a22;
+  --muted: #8a7353;
+  --accent-sage: #4f7d6a; --accent-sage-soft: #e3e3c9;
+  --accent-dusk: #3d4f7c; --accent-dusk-soft: #dfdccb;
+  --accent-mauve: #6e3b5c; --accent-mauve-soft: #e8d7c6;
+  --accent-sand: #b58a2e; --accent-sand-soft: #efdcae;
+  --accent-teal: #3f6e6e; --accent-teal-soft: #dde0c8;
+  --accent-clay: #8c2f2b; --accent-clay-soft: #ecd2b7;
+  --font-display: 'IM Fell English', Georgia, serif;
+  --font-sans: 'EB Garamond', Georgia, serif;
+  --radius-2xl: 2px; --radius-xl: 2px; --radius-lg: 2px;
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(ellipse at 50% 50%, transparent 55%, rgb(120 80 30 / 0.22)),
+    radial-gradient(circle at 20% 30%, rgb(160 120 60 / 0.08), transparent 40%),
+    radial-gradient(circle at 80% 70%, rgb(160 120 60 / 0.08), transparent 40%);
+  font-size: 17px;
+}
+[data-theme='manuscript'] .panel { border: 4px double var(--line-strong) !important; }
+[data-theme='manuscript'] .panel-title { font-style: italic; font-weight: 400 !important; font-size: 1.35rem !important; }
+[data-theme='manuscript'] .panel-title::before { content: '\2766  '; color: var(--accent-clay); font-style: normal; }
+[data-theme='manuscript'] .hero-title { font-weight: 400 !important; letter-spacing: 0 !important; }
+[data-theme='manuscript'] .hero-title::first-letter { color: var(--accent-clay); font-size: 1.45em; float: left; line-height: 0.85; margin-right: 0.06em; }
+[data-theme='manuscript'] .stat-value { font-family: var(--font-display); font-weight: 400 !important; }
+[data-theme='manuscript'] .btn { font-variant: small-caps; letter-spacing: 0.06em; border-radius: 2px !important; }
+[data-theme='manuscript'] .btn-primary { background: var(--accent-clay) !important; color: #f7edd6 !important; }
+[data-theme='manuscript'] .col { border-radius: 2px !important; }
+[data-theme='manuscript'] .col-fill { border-radius: 0 !important; background: linear-gradient(var(--ink-2), var(--ink)) !important; }
+[data-theme='manuscript'] .toast { border-radius: 2px !important; background: #2b1d0e !important; color: #f7edd6 !important; font-style: italic; }

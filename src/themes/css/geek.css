@@ -1,0 +1,53 @@
+@import '@fontsource/vt323/latin-400.css';
+@import '@fontsource/jetbrains-mono/latin-400.css';
+@import '@fontsource/jetbrains-mono/latin-700.css';
+
+/* Geek: a phosphor terminal. Square everything, scanlines, glow, a blinking cursor. */
+[data-theme='geek'] {
+  color-scheme: dark;
+  --bg: #030603;
+  --surface: #050a05;
+  --surface-2: #0a170c;
+  --line: #11361a;
+  --line-strong: #1f6b2c;
+  --ink: #39ff6a;
+  --ink-2: #2bd456;
+  --muted: #1f9a3f;
+  --accent-sage: #39ff6a; --accent-sage-soft: #072010;
+  --accent-dusk: #3ef0ff; --accent-dusk-soft: #041a1d;
+  --accent-mauve: #ff4fd8; --accent-mauve-soft: #1d0619;
+  --accent-sand: #ffd23e; --accent-sand-soft: #1c1705;
+  --accent-teal: #3effc0; --accent-teal-soft: #061c16;
+  --accent-clay: #ff7a3e; --accent-clay-soft: #1f0d05;
+  --font-display: 'VT323', ui-monospace, monospace;
+  --font-sans: 'JetBrains Mono', ui-monospace, monospace;
+  --radius-2xl: 0; --radius-xl: 0; --radius-lg: 0; --radius-md: 0;
+  background-color: var(--bg);
+  background-image:
+    repeating-linear-gradient(0deg, rgb(57 255 106 / 0.035) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at 50% 40%, rgb(57 255 106 / 0.07), transparent 70%);
+  text-shadow: 0 0 5px rgb(57 255 106 / 0.35);
+  font-size: 14px;
+}
+[data-theme='geek'] ::selection { background: #39ff6a; color: #000; }
+[data-theme='geek'] .rounded-full, [data-theme='geek'] .check { border-radius: 0 !important; }
+[data-theme='geek'] .panel {
+  box-shadow: inset 0 0 40px -20px rgb(57 255 106 / 0.35), 0 0 0 1px #0a240f;
+}
+[data-theme='geek'] .panel-title { font-family: var(--font-sans); font-size: 0.85rem !important; letter-spacing: 0; }
+[data-theme='geek'] .panel-title::before { content: '$ cd '; color: var(--muted); }
+[data-theme='geek'] .hero-title { font-size: clamp(2.8rem, 7vw, 4.6rem) !important; letter-spacing: 0 !important; }
+[data-theme='geek'] .hero-title::after {
+  content: '\2588'; margin-left: 0.15em; animation: geek-blink 1.05s steps(1) infinite;
+}
+@keyframes geek-blink { 50% { opacity: 0; } }
+[data-theme='geek'] .stat-value { font-size: 2.6rem !important; }
+[data-theme='geek'] .btn { text-transform: lowercase; }
+[data-theme='geek'] .btn-primary { background: var(--ink) !important; color: #000 !important; text-shadow: none; box-shadow: 0 0 14px rgb(57 255 106 / 0.45); }
+[data-theme='geek'] .btn-primary::before { content: '['; }
+[data-theme='geek'] .btn-primary::after { content: ']'; }
+[data-theme='geek'] .check { border-width: 1px !important; }
+[data-theme='geek'] .col-fill { background: repeating-linear-gradient(0deg, var(--ink) 0 3px, transparent 3px 5px) !important; box-shadow: 0 0 10px rgb(57 255 106 / 0.6); }
+[data-theme='geek'] .focus-card { border: 1px dashed var(--line-strong); }
+[data-theme='geek'] .toast { background: #000 !important; color: var(--ink) !important; border-color: var(--ink) !important; }
+[data-theme='geek'] .field { background: #000; caret-color: var(--ink); }

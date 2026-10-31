@@ -1,0 +1,46 @@
+@import '@fontsource/fredoka/latin-400.css';
+@import '@fontsource/fredoka/latin-600.css';
+@import '@fontsource/fredoka/latin-700.css';
+
+/* Kawaii: pastel confetti, bubbly type, sticker cards with a chunky drop edge, sparkles. */
+[data-theme='kawaii'] {
+  color-scheme: light;
+  --bg: #fff0f6;
+  --surface: #ffffff;
+  --surface-2: #ffe3ef;
+  --line: #ffc2dc;
+  --line-strong: #f58fbd;
+  --ink: #5a2a4a;
+  --ink-2: #8a4f77;
+  --muted: #b98aa8;
+  --accent-sage: #7fdcc0; --accent-sage-soft: #ddf7ee;
+  --accent-dusk: #8fd0ff; --accent-dusk-soft: #e0f2ff;
+  --accent-mauve: #ff8fc2; --accent-mauve-soft: #ffe0ef;
+  --accent-sand: #ffd36e; --accent-sand-soft: #fff3d4;
+  --accent-teal: #b9a2ff; --accent-teal-soft: #eee7ff;
+  --accent-clay: #ffab8f; --accent-clay-soft: #ffe7de;
+  --font-display: 'Fredoka', ui-rounded, sans-serif;
+  --font-sans: 'Fredoka', ui-rounded, sans-serif;
+  --radius-2xl: 28px; --radius-xl: 20px;
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(circle, #ffb3d6 2px, transparent 2.5px),
+    radial-gradient(circle, #bfe9ff 2px, transparent 2.5px),
+    radial-gradient(circle, #d9ccff 1.5px, transparent 2px);
+  background-size: 90px 90px, 130px 130px, 70px 70px;
+  background-position: 0 0, 40px 60px, 20px 30px;
+}
+[data-theme='kawaii'] .panel { border: 2.5px solid var(--line) !important; box-shadow: 0 7px 0 var(--line); }
+[data-theme='kawaii'] .panel-title { font-weight: 700 !important; font-size: 1.2rem !important; }
+[data-theme='kawaii'] .panel-title::after { content: ' \2727'; color: var(--accent-mauve); }
+[data-theme='kawaii'] .hero-title { font-weight: 700 !important; letter-spacing: -0.01em !important; color: var(--ink) !important; }
+[data-theme='kawaii'] .stat-strip { border: 2.5px solid var(--line) !important; box-shadow: 0 7px 0 var(--line); background: var(--line) !important; gap: 2.5px !important; }
+[data-theme='kawaii'] .stat-value { color: var(--accent-mauve) !important; font-weight: 700 !important; }
+[data-theme='kawaii'] .btn { font-weight: 600; }
+[data-theme='kawaii'] .btn-primary { background: var(--accent-mauve) !important; color: #fff !important; box-shadow: 0 4px 0 #e06fa4; }
+[data-theme='kawaii'] .btn-primary:active { transform: translateY(3px) !important; box-shadow: 0 1px 0 #e06fa4; }
+[data-theme='kawaii'] .check { border-width: 2.5px !important; }
+[data-theme='kawaii'] .col { border-width: 2.5px !important; border-color: var(--line) !important; }
+[data-theme='kawaii'] .col-fill { background: linear-gradient(to top, #ff8fc2, #b9a2ff) !important; }
+[data-theme='kawaii'] .focus-card { border: 2.5px solid var(--line); box-shadow: 0 7px 0 var(--line); }
+[data-theme='kawaii'] .toast { background: var(--accent-mauve) !important; color: #fff !important; border: 0 !important; font-weight: 600; box-shadow: 0 5px 0 #e06fa4; }

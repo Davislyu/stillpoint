@@ -1,0 +1,53 @@
+{
+  "name": "stillpoint",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "description": "Habits, meals, workouts, notes and extra spending, synced across devices with Supabase.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b",
+    "test": "vitest run",
+    "test:db": "bash supabase/tests/run.sh",
+    "dev:e2e": "VITE_E2E_MEMORY_BACKEND=true vite",
+    "build:e2e": "VITE_E2E_MEMORY_BACKEND=true vite build --outDir dist-e2e"
+  },
+  "dependencies": {
+    "@fontsource-variable/bricolage-grotesque": "^5.3.0",
+    "@fontsource-variable/hanken-grotesk": "^5.3.0",
+    "@fontsource/archivo-black": "^5.3.0",
+    "@fontsource/caveat": "^5.3.0",
+    "@fontsource/eb-garamond": "^5.3.0",
+    "@fontsource/fredoka": "^5.3.0",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
+    "@fontsource/im-fell-english": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "@fontsource/lexend": "^5.3.0",
+    "@fontsource/orbitron": "^5.3.0",
+    "@fontsource/patrick-hand": "^5.3.0",
+    "@fontsource/pixelify-sans": "^5.3.0",
+    "@fontsource/press-start-2p": "^5.3.0",
+    "@fontsource/shippori-mincho": "^5.3.0",
+    "@fontsource/space-grotesk": "^5.3.0",
+    "@fontsource/vt323": "^5.3.0",
+    "@fontsource/young-serif": "^5.3.0",
+    "@supabase/supabase-js": "^2.118.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5"
+  }
+}

@@ -1,0 +1,72 @@
+import { addDays, lastNDays, startOfWeek, type MonthKey } from '../lib/date'
+import { MEAL_NUMBERS, type AppState, type DateKey, type Habit } from './types'
+
+/** A day counts toward the streak once at least this share of habits is done. */
+export const STREAK_THRESHOLD = 0.5
+export const WINDOW_DAYS = 14
+
+// ── Habits ──────────────────────────────────────────────────────────────
+
+export const isActiveOn = (h: Habit, day: DateKey) =>
+  h.createdOn <= day && (!h.archivedOn || h.archivedOn > day)
+
+export const activeHabits = (s: AppState, day: DateKey) => s.habits.filter((h) => isActiveOn(h, day))
+
+export const isDone = (s: AppState, id: string, day: DateKey) => (s.completions[day] ?? []).includes(id)
+
+export interface DayCompletion {
+  date: DateKey
+  done: number
+  total: number
+  /** 0–1, or null when no habits were being tracked that day */
+  share: number | null
+}
+
+export function completionOn(s: AppState, day: DateKey): DayCompletion {
+  const habits = activeHabits(s, day)
+  const doneIds = new Set(s.completions[day] ?? [])
+  const done = habits.filter((h) => doneIds.has(h.id)).length
+  return { date: day, done, total: habits.length, share: habits.length ? done / habits.length : null }
+}
+
+export const completionHistory = (s: AppState, today: DateKey, n = WINDOW_DAYS) =>
+  lastNDays(today, n).map((d) => completionOn(s, d))
+
+const qualifies = (c: DayCompletion) => c.share !== null && c.share >= STREAK_THRESHOLD
+
+/**
+ * Consecutive days at ≥ 50 % completion, ending today. Today is still in
+ * progress, so if it hasn't qualified yet the streak runs through yesterday.
+ */
+export function currentStreak(s: AppState, today: DateKey): number {
+  let day = qualifies(completionOn(s, today)) ? today : addDays(today, -1)
+  let streak = 0
+  // 3650-day guard keeps a corrupted save from looping forever.
+  for (let i = 0; i < 3650; i++) {
+    if (!qualifies(completionOn(s, day))) break
+    streak++
+    day = addDays(day, -1)
+  }
+  return streak
+}
+
+
+// ── Meals ───────────────────────────────────────────────────────────────
+
+export const mealsDone = (s: AppState, day: DateKey) =>
+  MEAL_NUMBERS.filter((n) => s.meals[day]?.[n]?.isCompleted).length
+
+// ── Workouts ────────────────────────────────────────────────────────────
+
+export const workoutsInWeek = (s: AppState, weekStart: DateKey) => s.workouts[weekStart] ?? 0
+
+/** The last `n` weeks (Monday keys), oldest first, ending with the current one. */
+export const recentWeeks = (today: DateKey, n: number) =>
+  Array.from({ length: n }, (_, i) => addDays(startOfWeek(today), -7 * (n - 1 - i)))
+
+// ── Spending ────────────────────────────────────────────────────────────
+
+export const spendingsInMonth = (s: AppState, month: MonthKey) => s.spendings.filter((x) => x.date.startsWith(month))
+
+export const monthTotalCents = (s: AppState, month: MonthKey) =>
+  spendingsInMonth(s, month).reduce((sum, x) => sum + x.amountCents, 0)

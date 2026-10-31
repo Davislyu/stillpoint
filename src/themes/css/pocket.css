@@ -1,0 +1,50 @@
+@import '@fontsource/press-start-2p/latin-400.css';
+@import '@fontsource/pixelify-sans/latin-400.css';
+@import '@fontsource/pixelify-sans/latin-600.css';
+
+/* Pocket 8-bit: the four-shade green handheld palette, pixel type, chunky stepped borders. */
+[data-theme='pocket'] {
+  color-scheme: light;
+  --bg: #9bbc0f;
+  --surface: #8bac0f;
+  --surface-2: #9bbc0f;
+  --line: #306230;
+  --line-strong: #0f380f;
+  --ink: #0f380f;
+  --ink-2: #1f4f1f;
+  --muted: #306230;
+  --accent-sage: #0f380f; --accent-sage-soft: #9bbc0f;
+  --accent-dusk: #306230; --accent-dusk-soft: #9bbc0f;
+  --accent-mauve: #0f380f; --accent-mauve-soft: #a7c41f;
+  --accent-sand: #306230; --accent-sand-soft: #a7c41f;
+  --accent-teal: #0f380f; --accent-teal-soft: #9bbc0f;
+  --accent-clay: #306230; --accent-clay-soft: #a7c41f;
+  --font-display: 'Press Start 2P', ui-monospace, monospace;
+  --font-sans: 'Pixelify Sans', ui-monospace, monospace;
+  --radius-2xl: 0; --radius-xl: 0; --radius-lg: 0; --radius-md: 0;
+  background-color: var(--bg);
+  background-image: repeating-linear-gradient(0deg, rgb(15 56 15 / 0.04) 0 2px, transparent 2px 4px);
+  font-size: 16px;
+}
+[data-theme='pocket'] * { image-rendering: pixelated; }
+[data-theme='pocket'] .rounded-full, [data-theme='pocket'] .check { border-radius: 0 !important; }
+[data-theme='pocket'] .panel {
+  border: 0 !important;
+  box-shadow: 0 -4px 0 #0f380f, 0 4px 0 #0f380f, -4px 0 0 #0f380f, 4px 0 0 #0f380f, 0 8px 0 #306230;
+  margin: 4px;
+}
+[data-theme='pocket'] .panel-title { font-size: 0.72rem !important; line-height: 1.6; letter-spacing: 0 !important; text-transform: uppercase; }
+[data-theme='pocket'] .panel-title::before { content: '\25B6  '; }
+[data-theme='pocket'] .hero-title { font-size: clamp(1.25rem, 3.6vw, 2.1rem) !important; line-height: 1.5 !important; letter-spacing: 0 !important; }
+[data-theme='pocket'] .stat-value { font-size: 1.3rem !important; }
+[data-theme='pocket'] .stat-strip { background: #0f380f !important; gap: 4px !important; border: 4px solid #0f380f !important; }
+[data-theme='pocket'] .btn { font-family: var(--font-display); font-size: 0.62rem !important; text-transform: uppercase; }
+[data-theme='pocket'] .btn-primary { background: #0f380f !important; color: #9bbc0f !important; box-shadow: 0 4px 0 #306230; }
+[data-theme='pocket'] .btn-primary::before { content: '\25B6 '; }
+[data-theme='pocket'] .check { border-width: 3px !important; border-color: #0f380f !important; }
+[data-theme='pocket'] .check[data-done='true'] { background: #0f380f !important; }
+[data-theme='pocket'] .col { border: 3px solid #0f380f !important; }
+[data-theme='pocket'] .col-fill { background: repeating-linear-gradient(0deg, #0f380f 0 6px, #306230 6px 8px) !important; }
+[data-theme='pocket'] .focus-card { border: 4px solid #0f380f; }
+[data-theme='pocket'] .field { border: 3px solid #0f380f; background: #9bbc0f; }
+[data-theme='pocket'] .toast { background: #0f380f !important; color: #9bbc0f !important; font-family: var(--font-display); font-size: 0.65rem; border: 4px solid #306230 !important; }

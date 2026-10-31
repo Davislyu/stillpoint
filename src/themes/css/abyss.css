@@ -1,0 +1,42 @@
+@import '@fontsource/lexend/latin-200.css';
+@import '@fontsource/lexend/latin-300.css';
+@import '@fontsource/lexend/latin-500.css';
+
+/* Abyss: deep water, drifting light, bioluminescent edges. */
+[data-theme='abyss'] {
+  color-scheme: dark;
+  --bg: #020d1a;
+  --surface: rgb(6 32 52 / 0.62);
+  --surface-2: rgb(10 50 74 / 0.55);
+  --line: #0e3a52;
+  --line-strong: #1b5d7d;
+  --ink: #d6f6ff;
+  --ink-2: #8fd3e8;
+  --muted: #4f8ea6;
+  --accent-sage: #9cff6f; --accent-sage-soft: rgb(156 255 111 / 0.08);
+  --accent-dusk: #8b7bff; --accent-dusk-soft: rgb(139 123 255 / 0.1);
+  --accent-mauve: #ff6fd8; --accent-mauve-soft: rgb(255 111 216 / 0.08);
+  --accent-sand: #ffc46b; --accent-sand-soft: rgb(255 196 107 / 0.08);
+  --accent-teal: #3ff3ff; --accent-teal-soft: rgb(63 243 255 / 0.08);
+  --accent-clay: #36d6b2; --accent-clay-soft: rgb(54 214 178 / 0.08);
+  --font-display: 'Lexend', ui-sans-serif, sans-serif;
+  --font-sans: 'Lexend', ui-sans-serif, sans-serif;
+  --radius-2xl: 22px; --radius-xl: 16px;
+  background-color: var(--bg);
+  background-image:
+    radial-gradient(circle at 20% 80%, rgb(63 243 255 / 0.10), transparent 30%),
+    radial-gradient(circle at 80% 30%, rgb(139 123 255 / 0.10), transparent 35%),
+    radial-gradient(circle, rgb(214 246 255 / 0.25) 1px, transparent 1.6px),
+    linear-gradient(#04263a, #020d1a 60%);
+  background-size: auto, auto, 160px 160px, auto;
+}
+[data-theme='abyss'] .panel { border-color: rgb(63 243 255 / 0.16) !important; box-shadow: inset 0 1px 0 rgb(63 243 255 / 0.12), 0 20px 50px -30px rgb(63 243 255 / 0.35); backdrop-filter: blur(8px); }
+[data-theme='abyss'] .panel-title { font-weight: 300 !important; letter-spacing: 0.06em !important; }
+[data-theme='abyss'] .hero-title { font-weight: 200 !important; letter-spacing: 0.01em !important; text-shadow: 0 0 30px rgb(63 243 255 / 0.45); }
+[data-theme='abyss'] .stat-value { font-weight: 200 !important; color: var(--accent-teal) !important; text-shadow: 0 0 14px rgb(63 243 255 / 0.5); }
+[data-theme='abyss'] .stat-strip { background: rgb(63 243 255 / 0.12) !important; }
+[data-theme='abyss'] .stat-strip > div { background: rgb(2 13 26 / 0.85) !important; }
+[data-theme='abyss'] .btn-primary { background: var(--accent-teal) !important; color: #02131f !important; box-shadow: 0 0 18px rgb(63 243 255 / 0.45); }
+[data-theme='abyss'] .col-fill { background: linear-gradient(to top, #3ff3ff, #8b7bff) !important; box-shadow: 0 0 14px rgb(63 243 255 / 0.6); }
+[data-theme='abyss'] .check[data-done='true'] { box-shadow: 0 0 10px currentColor; }
+[data-theme='abyss'] .toast { background: rgb(6 32 52 / 0.95) !important; color: var(--accent-teal) !important; border-color: rgb(63 243 255 / 0.4) !important; }
