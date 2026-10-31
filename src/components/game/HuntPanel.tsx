@@ -56,7 +56,7 @@ export function HuntPanel() {
     >
       <ol className="mb-4 flex items-center gap-2" aria-label="Today's monsters">
         {today.fights.map((f, i) => (
-          <li key={f.key} className={`flex flex-1 items-center gap-2 rounded-xl border px-2 py-1.5 ${f === target ? 'border-line-strong bg-surface-2' : 'border-line'}`}>
+          <li key={f.key} className={`flex min-w-0 flex-1 basis-0 items-center gap-2 rounded-xl border px-2 py-1.5 ${f === target ? 'border-line-strong bg-surface-2' : 'border-line'}`}>
             <MonsterPortrait monster={f.monster} size={32} slain={f.slain} />
             <span className={`min-w-0 truncate text-[12px] ${f.slain ? 'text-muted line-through' : 'text-ink-2'}`}>
               {i === 2 ? 'Elite: ' : ''}

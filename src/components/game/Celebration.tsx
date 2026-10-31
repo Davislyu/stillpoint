@@ -33,7 +33,7 @@ export function Celebration() {
   const key = item.kind === 'level' ? `lvl-${item.level}` : item.kind === 'kill' ? `kill-${item.monster.id}-${queue.length}` : item.a.id
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-4 z-[60] flex justify-center px-4" aria-live="assertive">
+    <div className="pointer-events-none fixed inset-x-0 top-[max(1rem,env(safe-area-inset-top))] z-40 flex justify-center px-4" aria-live="assertive">
       <button
         key={key}
         onClick={dismiss}

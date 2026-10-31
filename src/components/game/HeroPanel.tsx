@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { ACHIEVEMENTS } from '../../game/achievements'
 import { ATTR_LABEL, nextUp, type Attr } from '../../game/engine'
 import { ITEM_COLOR, SLOT_LABEL, SLOTS } from '../../game/loot'
@@ -8,9 +8,10 @@ import { useStore } from '../../state/store'
 import { useVibe } from '../../themes/vibe'
 import { Button } from '../ui/Button'
 import { Panel } from '../ui/Panel'
-import { AchievementsDialog } from './AchievementsDialog'
-import { ArmoryDialog } from './ArmoryDialog'
 import { Badge, RARITY_COLOR } from './Badge'
+
+const AchievementsDialog = lazy(() => import('./AchievementsDialog').then((m) => ({ default: m.AchievementsDialog })))
+const ArmoryDialog = lazy(() => import('./ArmoryDialog').then((m) => ({ default: m.ArmoryDialog })))
 
 /** A class sigil: a ring per ten levels around a glyph. */
 function Sigil({ level }: { level: number }) {
@@ -139,8 +140,10 @@ export function HeroPanel() {
       <Button className="mt-5 w-full" onClick={() => setOpen(true)}>
         All achievements ({game.unlockedCount}/{total})
       </Button>
-      {open && <AchievementsDialog onClose={() => setOpen(false)} />}
-      {armory && <ArmoryDialog initialTab={armory} onClose={() => setArmory(null)} />}
+      <Suspense fallback={null}>
+        {open && <AchievementsDialog onClose={() => setOpen(false)} />}
+        {armory && <ArmoryDialog initialTab={armory} onClose={() => setArmory(null)} />}
+      </Suspense>
     </Panel>
   )
 }

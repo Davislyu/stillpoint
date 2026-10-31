@@ -81,8 +81,8 @@ export function AppearanceDialog({ onClose }: { onClose: () => void }) {
         className="anim-rise flex max-h-[92dvh] w-full max-w-5xl flex-col overflow-hidden rounded-t-3xl border border-line bg-bg shadow-2xl outline-none sm:rounded-3xl"
       >
         <header className="flex flex-wrap items-end justify-between gap-4 border-b border-line px-5 pt-5 pb-4 sm:px-7">
-          <div>
-            <h2 id="appearance-title" className="font-display text-2xl font-medium tracking-[-0.02em] text-ink">
+          <div className="min-w-0">
+            <h2 id="appearance-title" className="font-display text-xl font-medium sm:text-2xl tracking-[-0.02em] text-ink">
               Themes
             </h2>
             <p className="mt-1 text-sm text-muted">Each one changes type, shape and voice, not just colour. Your pick follows you to every device.</p>

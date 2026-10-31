@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { MealLog } from './components/body/MealLog'
 import { WorkoutTracker } from './components/body/WorkoutTracker'
 import { Greeting } from './components/dashboard/Greeting'
@@ -9,6 +9,9 @@ import { HistoryStrip } from './components/habits/HistoryStrip'
 import { ObservationsHub } from './components/journal/ObservationsHub'
 import { Header } from './components/layout/Header'
 import { MobileNav, type View } from './components/layout/MobileNav'
+import { Onboarding } from './components/dashboard/AuraPicker'
+import { AURA_BY_ID, isAdmin, layoutFromAura, PANEL_TAB, visibleTabs, type PanelId } from './dashboard/layout'
+import { useThemeCtx } from './themes/vibe'
 import { SpendingLedger } from './components/money/SpendingLedger'
 import { Splash } from './auth/AuthGate'
 import { CalendarPanel } from './components/calendar/CalendarPanel'
@@ -23,19 +26,56 @@ import { SyncEngine } from './data/syncEngine'
 import { useStore } from './state/store'
 import type { DateKey } from './state/types'
 
-/** Show only the active tab's sections on phones; everything on desktop. */
-const shown = (view: View, ...tabs: View[]) => (tabs.includes(view) ? '' : 'hidden lg:block')
+const MAIN: PanelId[] = ['stats', 'hunt', 'focus', 'quests', 'habits', 'history', 'notes']
+const ASIDE: PanelId[] = ['hero', 'calendar', 'meals', 'workouts', 'spending']
 
 export default function App() {
   const { today, sync, engine, user } = useStore()
+  const { prefs, loadedFor, setLayout } = useThemeCtx()
+  const accountLoaded = loadedFor === user.id
   const { signOut } = useAuthActions()
   const [view, setView] = useState<View>('today')
   const [selectedDay, setSelectedDay] = useState<DateKey>(today)
   const backToToday = () => setSelectedDay(today)
 
-
   // Snap back to today after midnight.
   useEffect(() => setSelectedDay(today), [today])
+
+  // A layout cached on this device for another account never applies.
+  const layout = prefs.layout?.owner === user.id ? prefs.layout : null
+
+  // The founder's account gets the founder's build without the onboarding screen.
+  const admin = isAdmin(user.email)
+  useEffect(() => {
+    if (accountLoaded && !layout && admin) setLayout(layoutFromAura(AURA_BY_ID['lord-of-ravenmoor'], user.id))
+  }, [accountLoaded, layout, admin, setLayout, user.id])
+
+  // Each tab remembers where you were scrolled, like a native app.
+  const scrolls = useRef<Partial<Record<View, number>>>({})
+  const pendingScroll = useRef<number | null>(null)
+  const changeView = useCallback(
+    (v: View) => {
+      if (v === view) {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+        return
+      }
+      scrolls.current[view] = window.scrollY
+      pendingScroll.current = scrolls.current[v] ?? 0
+      setView(v)
+    },
+    [view],
+  )
+  useLayoutEffect(() => {
+    if (pendingScroll.current === null) return
+    window.scrollTo({ top: pendingScroll.current })
+    pendingScroll.current = null
+  }, [view])
+
+  const tabs = visibleTabs(layout)
+  // If the active tab disappears (panels hidden), fall back to Today.
+  useEffect(() => {
+    if (!tabs.includes(view)) setView('today')
+  }, [tabs.join(), view]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!sync.ready) {
     if (!sync.loadError) return <Splash />
@@ -58,50 +98,85 @@ export default function App() {
     )
   }
 
+  if (!layout) {
+    // Wait for the account's own preferences before deciding someone is new.
+    if (!accountLoaded || admin) return <Splash />
+    return <Onboarding />
+  }
+
+  const hidden = new Set(layout.hidden)
+  const featured = layout.featured && !hidden.has(layout.featured) ? layout.featured : null
+  const on = (id: PanelId) => !hidden.has(id) && id !== featured
+  /** Phones show one tab at a time; desktop shows everything. */
+  const tabOf = (id: PanelId): View => (id === featured ? 'today' : PANEL_TAB[id])
+  const wrap = (id: PanelId, node: ReactNode) => (
+    <div key={id} className={tabOf(id) === view ? '' : 'hidden lg:block'}>
+      {node}
+    </div>
+  )
+  const panel = (id: PanelId): ReactNode => {
+    switch (id) {
+      case 'stats':
+        return <StatStrip />
+      case 'hunt':
+        return <HuntPanel />
+      case 'focus':
+        return <TodaysFocus />
+      case 'quests':
+        return <QuestBoard />
+      case 'habits':
+        return <HabitList date={selectedDay} onBackToToday={backToToday} />
+      case 'history':
+        return <HistoryStrip selected={selectedDay} onSelect={setSelectedDay} />
+      case 'notes':
+        return <ObservationsHub date={selectedDay} onBackToToday={backToToday} />
+      case 'meals':
+        return <MealLog date={selectedDay} onBackToToday={backToToday} />
+      case 'workouts':
+        return <WorkoutTracker />
+      case 'spending':
+        return <SpendingLedger />
+      case 'hero':
+        return <HeroPanel />
+      case 'calendar':
+        return <CalendarPanel />
+    }
+  }
+  const asideIds = ASIDE.filter(on)
+  const heroOn = !hidden.has('hero')
+
   return (
     <GameProvider>
-    <div id="top" className="min-h-dvh pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:pb-12">
-      <Header
-        onHero={() => {
-          setView('hero')
-          document.getElementById('hero')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-        }}
-      />
-      <Celebration />
-      <main className="mx-auto mt-6 grid max-w-[1240px] gap-5 px-4 sm:px-6 lg:mt-8 lg:grid-cols-[minmax(0,1fr)_24rem] lg:gap-8 lg:px-8">
-        <div className="space-y-5">
-          <div className={`space-y-5 ${shown(view, 'today')}`}>
-            <Greeting />
-            <StatStrip />
-            <HuntPanel />
-            <TodaysFocus />
-            <QuestBoard />
-            <HabitList date={selectedDay} onBackToToday={backToToday} />
-            <HistoryStrip selected={selectedDay} onSelect={setSelectedDay} />
+      <div id="top" className="min-h-dvh pb-[calc(6.5rem+env(safe-area-inset-bottom))] lg:pb-12">
+        <Header
+          onHero={
+            heroOn
+              ? () => {
+                  changeView('hero')
+                  document.getElementById('hero')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                }
+              : undefined
+          }
+        />
+        <Celebration />
+        <main
+          className={`mx-auto mt-6 grid max-w-[1240px] gap-5 px-4 sm:px-6 lg:mt-8 lg:gap-8 lg:px-8 ${asideIds.length ? 'lg:grid-cols-[minmax(0,1fr)_24rem]' : 'lg:max-w-3xl'}`}
+        >
+          <div className="flex min-w-0 flex-col gap-5">
+            <div className={view === 'today' ? '' : 'hidden lg:block'}>
+              <Greeting />
+            </div>
+            {featured && wrap(featured, panel(featured))}
+            {MAIN.filter(on).map((id) => wrap(id, panel(id)))}
           </div>
-          <div className={shown(view, 'notes')}>
-            <ObservationsHub date={selectedDay} onBackToToday={backToToday} />
-          </div>
-        </div>
-
-        <aside aria-label="Hero, body and spending" className="space-y-5 lg:pt-2">
-          <div className={shown(view, 'hero')}>
-            <HeroPanel />
-          </div>
-          <div className={shown(view, 'today')}>
-            <CalendarPanel />
-          </div>
-          <div className={`space-y-5 ${shown(view, 'body')}`}>
-            <MealLog date={selectedDay} onBackToToday={backToToday} />
-            <WorkoutTracker />
-          </div>
-          <div className={shown(view, 'money')}>
-            <SpendingLedger />
-          </div>
-        </aside>
-      </main>
-      <MobileNav view={view} onChange={setView} />
-    </div>
+          {asideIds.length > 0 && (
+            <aside aria-label="More panels" className="flex min-w-0 flex-col gap-5 lg:pt-2">
+              {asideIds.map((id) => wrap(id, panel(id)))}
+            </aside>
+          )}
+        </main>
+        <MobileNav view={view} tabs={tabs} onChange={changeView} />
+      </div>
     </GameProvider>
   )
 }

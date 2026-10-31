@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { normalizeLayout, type Layout } from '../dashboard/layout'
 import { isThemeId, loadThemeCss, THEME_BY_ID, type ThemeDef, type ThemeId, type Vibe } from './registry'
 
 export type Mode = 'system' | 'light' | 'dark'
@@ -17,6 +18,8 @@ export interface Preferences {
   currency: Currency
   /** Gear slot → equipped item id. Missing slots auto-equip the best item. */
   equipped: Record<string, string>
+  /** Dashboard layout chosen at onboarding; null until the person picks an aura. */
+  layout: Layout | null
 }
 
 const isCurrency = (v: unknown): v is Currency => v === 'ILS' || v === 'USD'
@@ -47,13 +50,14 @@ function load(): Preferences {
         themesTried: (p.themesTried ?? []).filter(isThemeId),
         currency: isCurrency(p.currency) ? p.currency : defaultCurrency(),
         equipped: p.equipped && typeof p.equipped === 'object' ? p.equipped : {},
+        layout: normalizeLayout(p.layout),
       }
     }
     const legacy = localStorage.getItem(LEGACY_MODE_KEY)
     const mode: Mode = legacy === 'light' || legacy === 'dark' ? legacy : 'system'
-    return { theme: 'stillpoint', mode, themesTried: ['stillpoint'], currency: defaultCurrency(), equipped: {} }
+    return { theme: 'stillpoint', mode, themesTried: ['stillpoint'], currency: defaultCurrency(), equipped: {}, layout: null }
   } catch {
-    return { theme: 'stillpoint', mode: 'system', themesTried: ['stillpoint'], currency: 'USD', equipped: {} }
+    return { theme: 'stillpoint', mode: 'system', themesTried: ['stillpoint'], currency: 'USD', equipped: {}, layout: null }
   }
 }
 
@@ -67,6 +71,8 @@ export function normalizePrefs(raw: unknown): Partial<Preferences> {
   if (r.equipped && typeof r.equipped === 'object' && !Array.isArray(r.equipped)) {
     out.equipped = Object.fromEntries(Object.entries(r.equipped).filter(([, v]) => typeof v === 'string')) as Record<string, string>
   }
+  const layout = normalizeLayout((r as { layout?: unknown }).layout)
+  if (layout) out.layout = layout
   return out
 }
 
@@ -96,8 +102,11 @@ interface ThemeCtx {
   setMode: (m: Mode) => void
   setCurrency: (c: Currency) => void
   equip: (slot: string, itemId: string | null) => void
+  setLayout: (layout: Layout) => void
+  /** Id of the account whose preferences have been loaded (null before sign-in loads). */
+  loadedFor: string | null
   /** Merge preferences loaded from the account (another device's choice). */
-  adopt: (remote: Partial<Preferences>) => void
+  adopt: (remote: Partial<Preferences>, owner: string) => void
   /** The signed-in store registers here to save preference changes to the account. */
   setPersist: (fn: ((p: Preferences) => void) | null) => void
   setGalleryOpen: (open: boolean) => void
@@ -108,6 +117,7 @@ const Ctx = createContext<ThemeCtx | null>(null)
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [prefs, setPrefs] = useState<Preferences>(load)
   const persist = useRef<((p: Preferences) => void) | null>(null)
+  const [loadedFor, setLoadedFor] = useState<string | null>(null)
   // Latest prefs for callbacks that outlive a render (e.g. the gallery closing).
   const latest = useRef(prefs)
   latest.current = prefs
@@ -154,7 +164,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
           else delete equipped[slot]
           return { ...p, equipped }
         }),
-      adopt: (remote) =>
+      setLayout: (layout) => update((p) => ({ ...p, layout })),
+      loadedFor,
+      adopt: (remote, owner) => {
+        setLoadedFor(owner)
         update(
           (p) => ({
             theme: remote.theme ?? p.theme,
@@ -162,9 +175,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
             themesTried: [...new Set([...p.themesTried, ...(remote.themesTried ?? [])])],
             currency: remote.currency ?? p.currency,
             equipped: { ...p.equipped, ...(remote.equipped ?? {}) },
+            // The account's layout wins; a layout cached on this device only counts if it is this account's.
+            layout: remote.layout ?? (p.layout?.owner === owner ? p.layout : null),
           }),
           false,
-        ),
+        )
+      },
       setPersist: (fn) => {
         persist.current = fn
       },
@@ -173,7 +189,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         apply(latest.current)
       },
     }),
-    [prefs, update],
+    [prefs, update, loadedFor],
   )
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>
 }

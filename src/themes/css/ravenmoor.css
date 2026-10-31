@@ -78,3 +78,6 @@
 [data-theme='ravenmoor'] .hp-bar { border: 1px solid var(--line-strong); background: #160c0d !important; }
 [data-theme='ravenmoor'] .monster-portrait { filter: drop-shadow(0 0 6px rgb(179 38 42 / 0.45)); }
 [data-theme='ravenmoor'] .field { border-radius: 2px !important; }
+/* Cinzel is capitals only: keep the big lines from shouting on a phone. */
+[data-theme='ravenmoor'] .hero-title { font-size: clamp(1.9rem, 7.5vw, 3.2rem) !important; line-height: 1.08 !important; }
+[data-theme='ravenmoor'] .hero-title + p { font-family: var(--font-sans) !important; font-style: italic; letter-spacing: 0 !important; }

@@ -71,8 +71,8 @@ export function ArmoryDialog({ onClose, initialTab = 'gear' }: { onClose: () => 
       >
         <header className="border-b border-line px-5 pt-5 pb-3 sm:px-7">
           <div className="flex items-start justify-between gap-4">
-            <div>
-              <h2 id="armory-title" className="font-display text-2xl font-medium tracking-[-0.01em] text-ink">
+            <div className="min-w-0">
+              <h2 id="armory-title" className="font-display text-xl font-medium sm:text-2xl tracking-[-0.01em] text-ink">
                 {tab === 'gear' ? 'Armoury' : 'Bestiary'}
               </h2>
               <p className="mt-1 text-sm text-muted tabular">

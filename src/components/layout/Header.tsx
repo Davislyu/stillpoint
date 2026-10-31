@@ -1,8 +1,9 @@
 import { SyncIndicator } from './SyncIndicator'
-import { useState } from 'react'
-import { AppearanceDialog } from './AppearanceDialog'
+import { lazy, Suspense, useState } from 'react'
 import { PlayerChip } from '../game/PlayerChip'
 import { UserMenu } from './UserMenu'
+
+const AppearanceDialog = lazy(() => import('./AppearanceDialog').then((m) => ({ default: m.AppearanceDialog })))
 
 const PaletteIcon = () => (
   <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
@@ -13,7 +14,7 @@ const PaletteIcon = () => (
   </svg>
 )
 
-export function Header({ onHero }: { onHero: () => void }) {
+export function Header({ onHero }: { onHero?: () => void }) {
   const [themesOpen, setThemesOpen] = useState(false)
   return (
     <div className="app-header mx-auto flex max-w-[1240px] items-center justify-between gap-3 px-4 pt-[max(1.25rem,env(safe-area-inset-top))] sm:px-6 lg:px-8">
@@ -26,7 +27,7 @@ export function Header({ onHero }: { onHero: () => void }) {
       </a>
       <div className="flex min-w-0 items-center gap-3">
         <SyncIndicator />
-        <PlayerChip onOpen={onHero} />
+        {onHero && <PlayerChip onOpen={onHero} />}
         <button
           onClick={() => setThemesOpen(true)}
           className="btn inline-flex h-8 items-center gap-1.5 rounded-full border border-line px-3 text-[13px] text-ink-2 hover:text-ink"
@@ -36,7 +37,11 @@ export function Header({ onHero }: { onHero: () => void }) {
         </button>
         <UserMenu />
       </div>
-      {themesOpen && <AppearanceDialog onClose={() => setThemesOpen(false)} />}
+      {themesOpen && (
+        <Suspense fallback={null}>
+          <AppearanceDialog onClose={() => setThemesOpen(false)} />
+        </Suspense>
+      )}
     </div>
   )
 }

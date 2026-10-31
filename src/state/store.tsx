@@ -15,6 +15,7 @@ import { todayKey } from '../lib/date'
 import { useNow } from '../hooks/useNow'
 import { actionToOps, defaultHabitOps, type Action } from './actions'
 import { normalizePrefs, useThemeCtx } from '../themes/vibe'
+import { isAdmin } from '../dashboard/layout'
 import type { AppState, DateKey } from './types'
 import { toAppState } from './view'
 
@@ -26,6 +27,7 @@ interface Store {
   user: AuthUser
   sync: { status: SyncStatus; pending: number; ready: boolean; loadError: string | null }
   engine: SyncEngine
+  backend: Backend
 }
 
 const StoreContext = createContext<Store | null>(null)
@@ -52,8 +54,11 @@ export function StoreProvider({ backend, user, onRejected, children }: Props) {
         userId: user.id,
         onRejected,
         onFirstLoad: async (eng, profile) => {
-          adoptRef.current?.(normalizePrefs(profile.preferences))
-          if (profile.defaultsSeeded) return
+          const remote = normalizePrefs(profile.preferences)
+          adoptRef.current?.(remote, user.id)
+          // Brand-new accounts get starter habits from the aura they pick at onboarding.
+          // An account that already chose a layout (or the founder's) is seeded the classic way.
+          if (profile.defaultsSeeded || (!remote.layout && !isAdmin(user.email))) return
           if (Object.keys(eng.getState().tables.habits).length === 0) {
             eng.commit(await defaultHabitOps(user.id, todayKey()))
           }
@@ -93,9 +98,10 @@ export function StoreProvider({ backend, user, onRejected, children }: Props) {
       today,
       user,
       engine,
+      backend,
       sync: { status: sync.status, pending: sync.pending, ready: sync.ready, loadError: sync.loadError },
     }),
-    [state, dispatch, today, user, engine, sync.status, sync.pending, sync.ready, sync.loadError],
+    [state, dispatch, today, user, engine, backend, sync.status, sync.pending, sync.ready, sync.loadError],
   )
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>
 }

@@ -57,8 +57,8 @@ export function AchievementsDialog({ onClose }: { onClose: () => void }) {
       >
         <header className="border-b border-line px-5 pt-5 pb-3 sm:px-7">
           <div className="flex items-start justify-between gap-4">
-            <div>
-              <h2 id="ach-title" className="font-display text-2xl font-medium tracking-[-0.02em] text-ink">Achievements</h2>
+            <div className="min-w-0">
+              <h2 id="ach-title" className="font-display text-xl font-medium sm:text-2xl tracking-[-0.02em] text-ink">Achievements</h2>
               <p className="mt-1 text-sm text-muted tabular">
                 {game.unlockedCount} of {ACHIEVEMENTS.length} earned, {game.xp.toLocaleString()} XP total
               </p>

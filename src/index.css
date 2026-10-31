@@ -201,3 +201,20 @@
 @keyframes dmg { 0% { opacity: 0; transform: translateY(6px) scale(0.8); } 20% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(-26px); } }
 .anim-hit { animation: hit 420ms ease-out both; }
 .anim-dmg { animation: dmg 1.4s ease-out both; }
+
+/* Floating mobile tab bar: glides with the safe area instead of resizing. */
+.tabbar-wrap {
+  bottom: max(0.75rem, env(safe-area-inset-bottom));
+  transition: bottom 250ms ease;
+}
+
+/* Phones: 16px fields so iOS never zooms on focus; no grey tap flash; snappy taps. */
+@media (max-width: 1023px) {
+  input, textarea, select { font-size: max(16px, 1em) !important; }
+}
+button, a, [role='switch'], [role='radio'] { touch-action: manipulation; }
+[role='dialog'] .overflow-y-auto, [role='dialog'].overflow-y-auto { overscroll-behavior: contain; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+/* Nothing may scroll the page sideways on a phone. */
+html, body { overflow-x: clip; }

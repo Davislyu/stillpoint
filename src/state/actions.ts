@@ -147,9 +147,9 @@ const DEFAULT_HABITS: [string, AccentId][] = [
 ]
 
 /** Starter habits for a brand-new account, with ids stable across devices. */
-export async function defaultHabitOps(userId: string, today: DateKey): Promise<Op[]> {
+export async function defaultHabitOps(userId: string, today: DateKey, habits: [string, AccentId][] = DEFAULT_HABITS): Promise<Op[]> {
   return Promise.all(
-    DEFAULT_HABITS.map(async ([name, accent]) =>
+    habits.map(async ([name, accent]) =>
       upsert('habits', {
         id: await stableUid(`${userId}:default-habit:${name}`),
         user_id: userId,

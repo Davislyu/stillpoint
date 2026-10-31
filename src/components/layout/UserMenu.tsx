@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { legacyImportOps } from '../../data/legacyImport'
 import { SyncEngine } from '../../data/syncEngine'
 import { exportState, legacyImportedKey, parseLegacy, readLegacy, type LegacyState } from '../../state/storage'
 import { useStore } from '../../state/store'
 import { useToast } from '../ui/Toast'
 import { useAuthActions } from '../../auth/authActions'
+
+const CustomizeDialog = lazy(() => import('../dashboard/CustomizeDialog'))
 
 function Avatar({ name, image }: { name: string | null; image: string | null }) {
   const [broken, setBroken] = useState(false)
@@ -36,6 +38,7 @@ export function UserMenu() {
   const toast = useToast()
   const [open, setOpen] = useState(false)
   const [confirmSignOut, setConfirmSignOut] = useState(false)
+  const [customizing, setCustomizing] = useState(false)
   const [legacy, setLegacy] = useState(() => readLegacy(user.id))
   const ref = useRef<HTMLDivElement>(null)
 
@@ -105,6 +108,9 @@ export function UserMenu() {
             <p className="truncate text-[13px] text-muted">{user.email}</p>
           </div>
           <div className="border-t border-line pt-1.5">
+            <button role="menuitem" className={item} onClick={() => (setCustomizing(true), setOpen(false))}>
+              Customize dashboard
+            </button>
             <button role="menuitem" className={item} onClick={() => (exportState(state), setOpen(false))}>
               Download my data
             </button>
@@ -130,6 +136,11 @@ export function UserMenu() {
             </button>
           </div>
         </div>
+      )}
+      {customizing && (
+        <Suspense fallback={null}>
+          <CustomizeDialog onClose={() => setCustomizing(false)} />
+        </Suspense>
       )}
     </div>
   )

@@ -40,3 +40,14 @@ createRoot(document.getElementById('root')!).render(
 if (import.meta.env.PROD && 'serviceWorker' in navigator && import.meta.env.VITE_E2E_MEMORY_BACKEND !== 'true') {
   window.addEventListener('load', () => void navigator.serviceWorker.register('/sw.js'))
 }
+
+// After a deploy, an open tab may ask for a code-split chunk that no longer exists: reload once to pick up the new build.
+window.addEventListener('vite:preloadError', () => {
+  try {
+    if (sessionStorage.getItem('stillpoint:reloaded')) return
+    sessionStorage.setItem('stillpoint:reloaded', '1')
+  } catch {
+    /* ignore */
+  }
+  window.location.reload()
+})
