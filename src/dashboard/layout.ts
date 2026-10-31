@@ -34,6 +34,25 @@ export const PANELS: { id: PanelId; label: string; hint: string; tab: Tab }[] = 
   { id: 'spending', label: 'Extra spending', hint: 'Non-essential spending and the monthly total.', tab: 'money' },
   { id: 'hero', label: 'Hero & achievements', hint: 'Level, class, gear and 338 achievements.', tab: 'hero' },
 ]
+/** Panels that can never be switched off. */
+export const REQUIRED: PanelId[] = ['habits']
+/** A panel that only makes sense with others on: hunting needs workouts (they strike the weekly boss). */
+export const NEEDS: Partial<Record<PanelId, PanelId[]>> = { hunt: ['workouts'] }
+
+/** Drops impossible combinations so no layout can end up broken. */
+export function sanitizeHidden(hidden: PanelId[]): PanelId[] {
+  const set = new Set(hidden.filter((id) => !REQUIRED.includes(id)))
+  if (!set.has('hunt')) for (const need of NEEDS.hunt ?? []) set.delete(need)
+  return [...set]
+}
+
+/** Which visible panel (if any) is holding this one on. */
+export const neededBy = (id: PanelId, hidden: PanelId[]): PanelId | null => {
+  const h = new Set(hidden)
+  for (const [owner, needs] of Object.entries(NEEDS) as [PanelId, PanelId[]][]) if (!h.has(owner) && needs.includes(id)) return owner
+  return null
+}
+
 export const PANEL_IDS = PANELS.map((p) => p.id)
 export const PANEL_TAB = Object.fromEntries(PANELS.map((p) => [p.id, p.tab])) as Record<PanelId, Tab>
 const isPanelId = (v: unknown): v is PanelId => typeof v === 'string' && (PANEL_IDS as string[]).includes(v)
@@ -164,7 +183,7 @@ export interface Layout {
 
 export const layoutFromAura = (aura: Aura, owner: string): Layout => ({
   aura: aura.id,
-  hidden: [...aura.hidden],
+  hidden: sanitizeHidden([...aura.hidden]),
   featured: aura.featured,
   owner,
 })
@@ -174,7 +193,7 @@ export function normalizeLayout(raw: unknown): Layout | null {
   if (!r || typeof r !== 'object' || !isAuraId(r.aura) || typeof r.owner !== 'string') return null
   return {
     aura: r.aura,
-    hidden: Array.isArray(r.hidden) ? [...new Set(r.hidden.filter(isPanelId))] : [],
+    hidden: Array.isArray(r.hidden) ? sanitizeHidden([...new Set(r.hidden.filter(isPanelId))]) : [],
     featured: isPanelId(r.featured) ? r.featured : null,
     owner: r.owner,
   }

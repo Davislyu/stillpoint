@@ -20,3 +20,13 @@ describe('auras and layout', () => {
     })
   })
 })
+
+describe('layout rules', () => {
+  it('never lets Daily habits be hidden, even from an old saved layout', () => {
+    expect(normalizeLayout({ aura: 'iron-monk', owner: 'u', hidden: ['habits', 'quests'], featured: null })?.hidden).toEqual(['quests'])
+  })
+  it('keeps workouts on while the hunt is on', () => {
+    expect(normalizeLayout({ aura: 'iron-monk', owner: 'u', hidden: ['workouts'], featured: null })?.hidden).toEqual([])
+    expect(normalizeLayout({ aura: 'iron-monk', owner: 'u', hidden: ['workouts', 'hunt'], featured: null })?.hidden.sort()).toEqual(['hunt', 'workouts'])
+  })
+})

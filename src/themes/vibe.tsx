@@ -162,7 +162,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false
-    void loadThemeCss(prefs.theme).then(() => !cancelled && apply(prefs))
+    void loadThemeCss(prefs.theme).then(() => {
+      if (cancelled) return
+      apply(prefs)
+      // index.html paints the saved theme's colour before first paint; once the theme's own CSS is in, that inline colour must go or it would pin the old background.
+      document.documentElement.style.removeProperty('background-color')
+    })
     apply(prefs)
     try {
       localStorage.setItem(KEY, JSON.stringify(prefs))

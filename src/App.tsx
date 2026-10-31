@@ -10,7 +10,7 @@ import { ObservationsHub } from './components/journal/ObservationsHub'
 import { Header } from './components/layout/Header'
 import { MobileNav, type View } from './components/layout/MobileNav'
 import { Onboarding } from './components/dashboard/AuraPicker'
-import { AURA_BY_ID, isAdmin, layoutFromAura, PANEL_TAB, visibleTabs, type PanelId } from './dashboard/layout'
+import { AURA_BY_ID, isAdmin, layoutFromAura, PANEL_TAB, sanitizeHidden, visibleTabs, type PanelId } from './dashboard/layout'
 import { useThemeCtx } from './themes/vibe'
 import { SpendingLedger } from './components/money/SpendingLedger'
 import { Splash } from './auth/AuthGate'
@@ -120,7 +120,7 @@ export default function App() {
     return <Onboarding />
   }
 
-  const hidden = new Set(layout.hidden)
+  const hidden = new Set(sanitizeHidden(layout.hidden))
   const featured = layout.featured && !hidden.has(layout.featured) ? layout.featured : null
   const on = (id: PanelId) => !hidden.has(id) && id !== featured
   /** Phones show one tab at a time; desktop shows everything. */

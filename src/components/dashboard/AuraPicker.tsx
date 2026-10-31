@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { aurasFor, AURA_BY_ID, layoutFromAura, PANELS, type Aura, type Layout, type PanelId } from '../../dashboard/layout'
+import { aurasFor, AURA_BY_ID, layoutFromAura, neededBy, PANEL_TAB, PANELS, REQUIRED, sanitizeHidden, type Aura, type Layout, type PanelId } from '../../dashboard/layout'
 import { defaultHabitOps } from '../../state/actions'
 import { useStore } from '../../state/store'
 import { THEME_BY_ID } from '../../themes/registry'
@@ -52,32 +52,34 @@ export function AuraCard({ aura, selected, onSelect }: { aura: Aura; selected: b
   )
 }
 
-/** Show/hide switches for every panel, plus which one leads the Today screen. */
+/** Show/hide switches for every panel, plus which one leads the Today screen. Impossible combinations can't be made. */
 export function LayoutEditor({ layout, onChange }: { layout: Layout; onChange: (l: Layout) => void }) {
-  const hidden = new Set(layout.hidden)
   const toggle = (id: PanelId) => {
-    const next = new Set(hidden)
+    if (REQUIRED.includes(id) || neededBy(id, layout.hidden)) return
+    const next = new Set(layout.hidden)
     if (next.has(id)) next.delete(id)
     else next.add(id)
-    // Keep at least the habit list so the dashboard is never empty.
-    if (PANELS.every((p) => next.has(p.id))) return
-    onChange({ ...layout, hidden: [...next], featured: next.has(layout.featured as PanelId) ? null : layout.featured })
+    const hidden = sanitizeHidden([...next])
+    onChange({ ...layout, hidden, featured: layout.featured && hidden.includes(layout.featured) ? null : layout.featured })
   }
+  const hiddenSet = new Set(layout.hidden)
   return (
     <ul className="divide-y divide-line overflow-hidden rounded-2xl border border-line bg-surface">
       {PANELS.map((p) => {
-        const on = !hidden.has(p.id)
+        const on = !hiddenSet.has(p.id)
         const lead = layout.featured === p.id
+        const locked = REQUIRED.includes(p.id) ? 'Always on' : neededBy(p.id, layout.hidden) ? `Needed by ${PANELS.find((x) => x.id === neededBy(p.id, layout.hidden))?.label}` : null
         return (
           <li key={p.id} className="flex items-center gap-3 px-4 py-3">
             <div className="min-w-0 flex-1">
-              <p className="flex items-center gap-2 text-sm text-ink">
+              <p className="flex flex-wrap items-center gap-2 text-sm text-ink">
                 {p.label}
                 {lead && <span className="rounded-full bg-surface-2 px-1.5 py-px text-[10px] tracking-wide text-ink-2 uppercase">Leads Today</span>}
+                {locked && <span className="rounded-full border border-line px-1.5 py-px text-[10px] tracking-wide text-muted uppercase">{locked}</span>}
               </p>
               <p className="text-[12px] leading-snug text-muted">{p.hint}</p>
             </div>
-            {on && !lead && (
+            {on && !lead && PANEL_TAB[p.id] === 'today' && (
               <button type="button" className="shrink-0 rounded-full px-2 py-1 text-[12px] text-muted hover:text-ink" onClick={() => onChange({ ...layout, featured: p.id })}>
                 Put first
               </button>
@@ -86,9 +88,11 @@ export function LayoutEditor({ layout, onChange }: { layout: Layout; onChange: (
               type="button"
               role="switch"
               aria-checked={on}
+              aria-disabled={!!locked}
+              disabled={!!locked}
               aria-label={`Show ${p.label}`}
               onClick={() => toggle(p.id)}
-              className={`relative h-7 w-12 shrink-0 rounded-full transition-colors duration-200 ${on ? 'bg-ink' : 'bg-surface-2 ring-1 ring-line-strong ring-inset'}`}
+              className={`relative h-7 w-12 shrink-0 rounded-full transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50 ${on ? 'bg-ink' : 'bg-surface-2 ring-1 ring-line-strong ring-inset'}`}
             >
               <span className={`absolute top-1 left-1 size-5 rounded-full bg-bg shadow transition-transform duration-200 ${on ? 'translate-x-5' : ''}`} />
             </button>
