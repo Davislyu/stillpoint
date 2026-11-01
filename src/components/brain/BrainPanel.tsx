@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { displayTitle, excerpt, isDateTitle, parseTags, uniqueTitle } from '../../brain/notes'
+import { buildGraph, displayTitle, excerpt, graphStats, isDateTitle, parseTags, uniqueTitle } from '../../brain/notes'
 import { uid } from '../../lib/id'
 import { longDate } from '../../lib/date'
 import { useStore } from '../../state/store'
@@ -17,6 +17,7 @@ export function BrainPanel() {
   const [selected, setSelected] = useState<string | null>(null)
   const [tag, setTag] = useState<string | null>(null)
   const [q, setQ] = useState('')
+  const stats = useMemo(() => graphStats(buildGraph(notes)), [notes])
   const missing = backend.missingTables?.().includes('notes') ?? false
   const current = notes.find((n) => n.id === selected) ?? null
 
@@ -40,7 +41,7 @@ export function BrainPanel() {
     <Panel
       id="brain"
       title="Second brain"
-      hint={notes.length ? `${notes.length} ${notes.length === 1 ? 'thought' : 'thoughts'}. Link them with [[double brackets]].` : 'Write down what you think. Link ideas and watch them grow into a mind.'}
+      hint="A knowledge graph of your notes. Connect ideas with [[Title]], group them with #topic."
       actions={
         <Button size="sm" variant="primary" onClick={openToday}>
           <PlusIcon /> Today
@@ -53,6 +54,27 @@ export function BrainPanel() {
         </p>
       )}
       <BrainGraph notes={notes} selectedId={selected} onSelect={setSelected} onTag={setTag} activeTag={tag} />
+
+      <dl className="mt-2 grid grid-cols-3 gap-px overflow-hidden rounded-lg border border-line bg-line font-mono sm:grid-cols-6" aria-label="Graph statistics">
+        {[
+          ['nodes', stats.notes],
+          ['links', stats.links],
+          ['tags', stats.tags],
+          ['clusters', stats.clusters],
+          ['orphans', stats.orphans],
+          ['density', `${(stats.density * 100).toFixed(0)}%`],
+        ].map(([k, v]) => (
+          <div key={k} className="bg-surface px-2.5 py-1.5">
+            <dt className="text-[10px] tracking-wider text-muted uppercase">{k}</dt>
+            <dd className="text-[15px] text-ink tabular">{v}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className="mt-1.5 font-mono text-[11px] text-muted">
+        <span aria-hidden="true">● note &nbsp;□ tag &nbsp;◌ unwritten link</span>
+        {stats.hub && <span> &nbsp;· hub: {stats.hub.label} ({stats.hub.degree})</span>}
+        <span> &nbsp;· colour = cluster</span>
+      </p>
 
       <div className="mt-3 flex items-center gap-2">
         <input aria-label="Search notes" type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search your mind" className={`${inputClass} flex-1`} />
@@ -76,7 +98,7 @@ export function BrainPanel() {
       )}
 
       {notes.length === 0 ? (
-        <p className="mt-4 text-center text-sm text-muted">Nothing yet. Tap Today to start with a daily note.</p>
+        <p className="mt-4 text-center text-sm text-muted">No nodes yet. Tap Today to create the first one.</p>
       ) : (
         <ul className="mt-3 max-h-80 divide-y divide-line overflow-y-auto" aria-label="Notes">
           {shown.map((n) => (
@@ -84,9 +106,9 @@ export function BrainPanel() {
               <button type="button" onClick={() => setSelected(n.id)} aria-current={n.id === selected ? 'true' : undefined} className={`block w-full px-1 py-2.5 text-left hover:bg-surface-2 ${n.id === selected ? 'bg-surface-2' : ''}`}>
                 <span className="flex items-baseline justify-between gap-3">
                   <span className="truncate text-sm font-medium text-ink">{isDateTitle(n.title) ? longDate(n.title) : displayTitle(n)}</span>
-                  <span className="shrink-0 text-[11px] text-muted tabular">{n.date}</span>
+                  <span className="shrink-0 font-mono text-[11px] text-muted tabular">{n.date}</span>
                 </span>
-                {n.body && <span className="mt-0.5 block truncate text-[12px] text-muted">{excerpt(n.body)}</span>}
+                {n.body && <span className="mt-0.5 block truncate font-mono text-[11px] text-muted">{excerpt(n.body)}</span>}
               </button>
             </li>
           ))}

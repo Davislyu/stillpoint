@@ -13,6 +13,7 @@ export type PanelId =
   | 'calendar'
   | 'notes'
   | 'brain'
+  | 'journal'
   | 'meals'
   | 'lifts'
   | 'workouts'
@@ -31,6 +32,7 @@ export const PANELS: { id: PanelId; label: string; hint: string; tab: Tab }[] = 
   { id: 'history', label: 'History', hint: 'The last weeks as a strip of days.', tab: 'today' },
   { id: 'calendar', label: 'Google Calendar', hint: "Today's events, add workouts to your calendar.", tab: 'today' },
   { id: 'notes', label: 'Notes & critical thinking', hint: 'Daily observations and one thing you questioned.', tab: 'notes' },
+  { id: 'journal', label: 'Journal', hint: 'A private archive of your thinking and observations, with search.', tab: 'notes' },
   { id: 'brain', label: 'Second brain', hint: 'Linked notes drawn as a neural network inside a brain.', tab: 'notes' },
   { id: 'meals', label: 'Meals', hint: 'Choose 1 to 5 meals a day, with notes.', tab: 'body' },
   { id: 'workouts', label: 'Workouts', hint: 'Four sessions a week.', tab: 'body' },

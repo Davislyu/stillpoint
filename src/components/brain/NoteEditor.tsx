@@ -88,7 +88,7 @@ export function NoteEditor({ note, notes, onOpen, onClose }: { note: Note; notes
           onSelect={(e) => setCaret(e.currentTarget.selectionStart)}
           {...body.bind}
           placeholder="Write freely. Link ideas with [[Another note]], group them with #tags."
-          className={`${inputClass} h-auto min-h-40 resize-y py-2.5 leading-relaxed`}
+          className={`${inputClass} h-auto min-h-40 resize-y py-2.5 font-mono text-[13px] leading-relaxed`}
         />
         {picks.length > 0 && (
           <ul className="absolute right-2 bottom-2 left-2 z-10 overflow-hidden rounded-xl border border-line-strong bg-bg shadow-lg" role="listbox" aria-label="Link to a note">

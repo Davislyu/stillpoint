@@ -75,7 +75,7 @@ export function MealLog({ date, onBackToToday }: { date: DateKey; onBackToToday:
       id="meals"
       title="Meals"
       actions={<MealCount />}
-      hint={date === today ? `${done} of {slots.length} eaten` : <PastDayNote date={date} today={today} onBackToToday={onBackToToday} />}
+      hint={date === today ? `${done} of ${slots.length} eaten` : <PastDayNote date={date} today={today} onBackToToday={onBackToToday} />}
     >
       <div className="mb-3 flex gap-1" aria-hidden="true">
         {slots.map((n) => (

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Note } from '../state/types'
-import { backlinks, buildGraph, parseLinks, parseTags, renameLinks, uniqueTitle } from './notes'
+import { backlinks, buildGraph, graphStats, parseLinks, parseTags, renameLinks, uniqueTitle } from './notes'
 import { insideBrain, Simulation } from './sim'
 
 const n = (id: string, title: string, body = '', date = '2026-10-31'): Note => ({ id, date, title, body })
@@ -26,6 +26,13 @@ describe('graph', () => {
     expect(g.nodes.find((x) => x.kind === 'tag')?.label).toBe('#health')
     expect(g.nodes.find((x) => x.kind === 'ghost')?.label).toBe('nowhere')
     expect(g.edges.filter((e) => e.kind === 'link' && e.a.startsWith('n:') && e.b.startsWith('n:'))).toHaveLength(1)
+  })
+  it('measures the graph', () => {
+    const st = graphStats(g)
+    expect(st).toMatchObject({ notes: 3, tags: 1, orphans: 1, clusters: 1 })
+    expect(st.density).toBeCloseTo(1 / 3)
+    expect(st.hub?.degree).toBe(3)
+    expect(g.nodes.find((x) => x.label === 'Lonely')?.cluster).toBeGreaterThan(0)
   })
   it('lists backlinks', () => {
     expect(backlinks(notes, notes[0]).map((x) => x.id)).toEqual(['2'])

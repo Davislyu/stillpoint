@@ -20,6 +20,7 @@ import { HeroPanel } from './components/game/HeroPanel'
 import { FirstWeek } from './components/dashboard/FirstWeek'
 import { useReminder } from './hooks/useReminder'
 import { WeekPanel } from './components/dashboard/WeekPanel'
+import { JournalPanel } from './components/journal/JournalPanel'
 import { BrainPanel } from './components/brain/BrainPanel'
 import { LiftTracker } from './components/body/LiftTracker'
 import { HuntPanel } from './components/game/HuntPanel'
@@ -32,7 +33,7 @@ import { useStore } from './state/store'
 import type { DateKey } from './state/types'
 
 const QuickLog = lazy(() => import('./components/dashboard/QuickLog'))
-const MAIN: PanelId[] = ['stats', 'week', 'hunt', 'focus', 'quests', 'habits', 'history', 'notes', 'brain']
+const MAIN: PanelId[] = ['stats', 'week', 'hunt', 'focus', 'quests', 'habits', 'history', 'notes', 'journal', 'brain']
 const ASIDE: PanelId[] = ['hero', 'calendar', 'meals', 'workouts', 'lifts', 'spending']
 
 export default function App() {
@@ -156,6 +157,19 @@ export default function App() {
         return <WorkoutTracker />
       case 'lifts':
         return <LiftTracker />
+      case 'journal':
+        return (
+          <JournalPanel
+            onEdit={
+              hidden.has('notes')
+                ? undefined
+                : (d) => {
+                    setSelectedDay(d)
+                    requestAnimationFrame(() => document.getElementById('notes')?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
+                  }
+            }
+          />
+        )
       case 'brain':
         return <BrainPanel />
       case 'spending':

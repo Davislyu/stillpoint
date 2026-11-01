@@ -3,17 +3,12 @@ import { buildGraph } from '../../brain/notes'
 import { H, Simulation, W } from '../../brain/sim'
 import type { Note } from '../../state/types'
 
-/** Side-view brain outline plus a few gyri folds, in graph space. */
+/** Side-view brain contour, drawn as a thin reference outline like a glass-brain plot. */
 const OUTLINE = new Path2D(
   'M60 130 C40 90 70 40 130 34 C170 12 240 14 276 40 C336 46 372 92 352 140 C346 170 316 186 296 190 C318 206 322 244 292 262 C262 276 232 262 224 246 L236 296 C232 302 216 302 212 296 L206 220 C160 214 100 186 60 130 Z',
 )
-const FOLDS = [
-  'M110 80 C140 60 170 90 200 68 S260 60 300 84',
-  'M84 118 C120 104 150 128 190 110 S270 112 330 124',
-  'M120 154 C150 140 190 164 224 148 S290 150 316 160',
-  'M170 42 C176 70 160 86 176 108',
-  'M250 38 C246 66 262 82 252 104',
-]
+const CLUSTER_VARS = ['--accent-teal', '--accent-dusk', '--accent-sand', '--accent-mauve', '--accent-sage', '--accent-clay']
+const MONO = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace'
 
 const cssVar = (el: Element, name: string, fallback: string) => getComputedStyle(el).getPropertyValue(name).trim() || fallback
 
@@ -52,7 +47,7 @@ export function BrainGraph({ notes, selectedId, onSelect, onTag, activeTag }: Pr
     let scale = 1
     let t0 = performance.now()
     let drag: { id: string; moved: boolean } | null = null
-    let colors = { ink: '#ddd', muted: '#888', line: '#444', accent: '#8bd', warm: '#e96', surface: '#222' }
+    let colors = { ink: '#ddd', muted: '#888', line: '#444', accent: '#8bd', warm: '#e96', surface: '#222', clusters: ['#8bd'] as string[] }
 
     const readColors = () => {
       colors = {
@@ -62,6 +57,7 @@ export function BrainGraph({ notes, selectedId, onSelect, onTag, activeTag }: Pr
         accent: cssVar(box, '--accent-teal', colors.accent),
         warm: cssVar(box, '--accent-sand', colors.warm),
         surface: cssVar(box, '--surface-2', colors.surface),
+        clusters: CLUSTER_VARS.map((v, i) => cssVar(box, v, colors.clusters[i] ?? colors.accent)),
       }
     }
     const resize = () => {
@@ -88,115 +84,123 @@ export function BrainGraph({ notes, selectedId, onSelect, onTag, activeTag }: Pr
     function draw(now: number) {
       const { graph: g, selectedId: sel, activeTag: tag } = live.current
       const s = sim.current
-      const dpr = Math.min(2, devicePixelRatio || 1)
       ctx.save()
       ctx.setTransform(1, 0, 0, 1, 0, 0)
       ctx.clearRect(0, 0, cv.width, cv.height)
       ctx.restore()
-      void dpr
+      void now
 
-      // silhouette
-      ctx.lineWidth = 1.4
+      // plot area: minor and major grid, frame, axis ticks
+      ctx.lineWidth = 0.5
+      ctx.strokeStyle = colors.muted
+      for (let x = 0; x <= W; x += 20) {
+        ctx.globalAlpha = x % 100 === 0 ? 0.22 : 0.07
+        ctx.beginPath()
+        ctx.moveTo(x, 0)
+        ctx.lineTo(x, H)
+        ctx.stroke()
+      }
+      for (let y = 0; y <= H; y += 20) {
+        ctx.globalAlpha = y % 100 === 0 ? 0.22 : 0.07
+        ctx.beginPath()
+        ctx.moveTo(0, y)
+        ctx.lineTo(W, y)
+        ctx.stroke()
+      }
+      ctx.globalAlpha = 0.45
+      ctx.fillStyle = colors.muted
+      ctx.font = `5.5px ${MONO}`
+      ctx.textAlign = 'left'
+      for (let x = 100; x < W; x += 100) ctx.fillText(String(x), x + 2, 7)
+      for (let y = 100; y < H; y += 100) ctx.fillText(String(y), 2, y - 2)
+
+      // brain contour
+      ctx.globalAlpha = 0.5
+      ctx.lineWidth = 0.9
+      ctx.setLineDash([3, 3])
       ctx.strokeStyle = colors.line
-      ctx.fillStyle = colors.surface
-      ctx.globalAlpha = 0.35
-      ctx.fill(OUTLINE)
-      ctx.globalAlpha = 0.9
       ctx.stroke(OUTLINE)
-      ctx.globalAlpha = 0.28
-      ctx.lineWidth = 1
-      for (const f of FOLDS) ctx.stroke(new Path2D(f))
-      ctx.globalAlpha = 1
+      ctx.setLineDash([])
 
       const idx = new Map(s.nodes.map((n) => [n.id, n]))
+      const byId = new Map(g.nodes.map((n) => [n.id, n]))
       const selNode = sel ? `n:${sel}` : null
-      const focus = neighbours(hover.current ?? selNode)
+      const focusId = hover.current ?? selNode
+      const focus = neighbours(focusId)
       const hasFocus = focus.size > 0
-      const tagId = tag ? `t:${tag}` : null
-      const tagSet = tagId ? neighbours(tagId) : null
-      const t = (now - t0) / 1000
+      const tagSet = tag ? neighbours(`t:${tag}`) : null
+      const tone = (cluster: number) => colors.clusters[Math.min(cluster, colors.clusters.length - 1)] ?? colors.accent
 
-      // edges + signal pulses
-      let ei = 0
+      // edges
       for (const e of g.edges) {
         const a = idx.get(e.a)
         const b = idx.get(e.b)
-        ei++
         if (!a || !b) continue
-        const lit = hasFocus && focus.has(e.a) && focus.has(e.b) && (e.a === (hover.current ?? selNode) || e.b === (hover.current ?? selNode))
+        const lit = hasFocus && (e.a === focusId || e.b === focusId)
         const dim = (hasFocus && !lit) || (tagSet && !(tagSet.has(e.a) && tagSet.has(e.b)))
-        ctx.globalAlpha = dim ? 0.12 : lit ? 0.95 : 0.45
-        ctx.strokeStyle = lit ? colors.accent : colors.muted
-        ctx.lineWidth = lit ? 1.6 : e.kind === 'tag' ? 0.6 : 1
-        ctx.setLineDash(e.kind === 'tag' ? [2, 3] : [])
+        ctx.globalAlpha = dim ? 0.1 : lit ? 0.95 : 0.5
+        ctx.strokeStyle = lit ? colors.ink : tone(byId.get(e.a)?.cluster ?? 0)
+        ctx.lineWidth = lit ? 1.1 : 0.7
+        ctx.setLineDash(e.kind === 'tag' ? [1.5, 2.5] : [])
         ctx.beginPath()
         ctx.moveTo(a.x, a.y)
         ctx.lineTo(b.x, b.y)
         ctx.stroke()
-        ctx.setLineDash([])
-        if (!reduced && !dim && e.kind === 'link') {
-          const p = (t * 0.28 + ei * 0.37) % 1
-          ctx.globalAlpha = lit ? 1 : 0.7
-          ctx.fillStyle = lit ? colors.warm : colors.accent
-          ctx.beginPath()
-          ctx.arc(a.x + (b.x - a.x) * p, a.y + (b.y - a.y) * p, lit ? 1.9 : 1.3, 0, 7)
-          ctx.fill()
-        }
       }
+      ctx.setLineDash([])
 
       // nodes
       for (const n of s.nodes) {
-        const gn = g.nodes.find((x) => x.id === n.id)
+        const gn = byId.get(n.id)
         if (!gn) continue
         const dim = (hasFocus && !focus.has(n.id)) || (tagSet && !tagSet.has(n.id))
         const isSel = n.id === selNode
-        const base = gn.kind === 'note' ? colors.ink : gn.kind === 'tag' ? colors.warm : colors.muted
+        const col = tone(gn.cluster)
+        const r = gn.kind === 'note' ? Math.max(2.2, n.r * 0.55) : gn.kind === 'tag' ? 2.4 : 2
         ctx.globalAlpha = dim ? 0.25 : 1
-        if (gn.kind !== 'ghost' && !dim) {
-          const pulse = reduced ? 0 : Math.sin(t * 1.6 + n.x * 0.05) * 0.5 + 0.5
-          const glow = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r * (isSel ? 4 : 2.8))
-          glow.addColorStop(0, gn.kind === 'tag' ? colors.warm : colors.accent)
-          glow.addColorStop(1, 'transparent')
-          ctx.globalAlpha = (isSel ? 0.55 : 0.18 + pulse * 0.1) * (dim ? 0.3 : 1)
-          ctx.fillStyle = glow
-          ctx.beginPath()
-          ctx.arc(n.x, n.y, n.r * (isSel ? 4 : 2.8), 0, 7)
-          ctx.fill()
-          ctx.globalAlpha = 1
-        }
-        ctx.beginPath()
+        ctx.lineWidth = 1
         if (gn.kind === 'tag') {
-          ctx.moveTo(n.x, n.y - n.r)
-          ctx.lineTo(n.x + n.r, n.y)
-          ctx.lineTo(n.x, n.y + n.r)
-          ctx.lineTo(n.x - n.r, n.y)
-          ctx.closePath()
-        } else ctx.arc(n.x, n.y, n.r, 0, 7)
-        if (gn.kind === 'ghost') {
-          ctx.strokeStyle = base
-          ctx.lineWidth = 1
-          ctx.setLineDash([2, 2])
+          ctx.strokeStyle = col
+          ctx.strokeRect(n.x - r, n.y - r, r * 2, r * 2)
+        } else if (gn.kind === 'ghost') {
+          ctx.strokeStyle = colors.muted
+          ctx.setLineDash([1.2, 1.6])
+          ctx.beginPath()
+          ctx.arc(n.x, n.y, r, 0, 7)
           ctx.stroke()
           ctx.setLineDash([])
         } else {
-          ctx.fillStyle = base
+          ctx.fillStyle = col
+          ctx.beginPath()
+          ctx.arc(n.x, n.y, r, 0, 7)
           ctx.fill()
-          if (isSel) {
-            ctx.strokeStyle = colors.accent
-            ctx.lineWidth = 1.8
-            ctx.beginPath()
-            ctx.arc(n.x, n.y, n.r + 3, 0, 7)
-            ctx.stroke()
-          }
         }
-        const showLabel = isSel || hover.current === n.id || (!hasFocus && !dim && gn.kind === 'note' && gn.degree >= 2) || (tagSet && tagSet.has(n.id)) || (hasFocus && focus.has(n.id))
+        if (isSel) {
+          // crosshair marker
+          ctx.globalAlpha = 1
+          ctx.strokeStyle = colors.ink
+          ctx.lineWidth = 0.8
+          ctx.beginPath()
+          ctx.arc(n.x, n.y, r + 3.5, 0, 7)
+          ctx.moveTo(n.x - r - 8, n.y)
+          ctx.lineTo(n.x - r - 4, n.y)
+          ctx.moveTo(n.x + r + 4, n.y)
+          ctx.lineTo(n.x + r + 8, n.y)
+          ctx.moveTo(n.x, n.y - r - 8)
+          ctx.lineTo(n.x, n.y - r - 4)
+          ctx.moveTo(n.x, n.y + r + 4)
+          ctx.lineTo(n.x, n.y + r + 8)
+          ctx.stroke()
+        }
+        const showLabel = isSel || hover.current === n.id || (!hasFocus && !tagSet && gn.kind === 'note' && gn.degree >= 2) || (hasFocus && focus.has(n.id)) || (tagSet && tagSet.has(n.id))
         if (showLabel) {
           ctx.globalAlpha = dim ? 0.3 : 0.95
-          ctx.font = `${isSel ? 600 : 500} 8.5px ui-sans-serif, system-ui, sans-serif`
-          ctx.textAlign = 'center'
+          ctx.font = `${isSel ? 600 : 400} 6.5px ${MONO}`
+          ctx.textAlign = 'left'
           ctx.fillStyle = colors.ink
-          const label = gn.label.length > 22 ? gn.label.slice(0, 21) + '…' : gn.label
-          ctx.fillText(label, n.x, n.y + n.r + 10)
+          const label = gn.label.length > 24 ? gn.label.slice(0, 23) + '…' : gn.label
+          const lx = n.x + r + 3
+          ctx.fillText(label, lx > W - 60 ? n.x - r - 3 - ctx.measureText(label).width : lx, n.y + 2.2)
         }
       }
       ctx.globalAlpha = 1
@@ -207,7 +211,7 @@ export function BrainGraph({ notes, selectedId, onSelect, onTag, activeTag }: Pr
       const s = sim.current
       if (s.active) for (let i = 0; i < 2; i++) s.step()
       draw(now)
-      if (visible && (!reduced || s.active || drag)) raf = requestAnimationFrame(frame)
+      if (visible && (s.active || drag)) raf = requestAnimationFrame(frame)
     }
     const start = () => {
       if (!raf && visible) raf = requestAnimationFrame(frame)
@@ -312,7 +316,7 @@ export function BrainGraph({ notes, selectedId, onSelect, onTag, activeTag }: Pr
   useEffect(() => kick.current(), [selectedId, activeTag])
 
   return (
-    <div ref={wrap} className="relative aspect-[4/3] w-full overflow-hidden rounded-xl border border-line bg-bg" data-testid="brain-graph">
+    <div ref={wrap} className="relative aspect-[4/3] w-full overflow-hidden rounded-lg border border-line bg-bg" data-testid="brain-graph">
       <canvas
         ref={canvas}
         className="absolute inset-0 size-full"

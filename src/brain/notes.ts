@@ -31,6 +31,8 @@ export interface GNode {
   /** Connections; drives node size. */
   degree: number
   noteId?: string
+  /** Connected-component index, 0 = largest. Drives colour. */
+  cluster: number
 }
 export interface GEdge {
   a: string
@@ -65,7 +67,7 @@ export function buildGraph(notes: Note[]): Graph {
     bump(a)
     bump(b)
   }
-  for (const n of notes) nodes.set(`n:${n.id}`, { id: `n:${n.id}`, kind: 'note', label: displayTitle(n), degree: 0, noteId: n.id })
+  for (const n of notes) nodes.set(`n:${n.id}`, { id: `n:${n.id}`, kind: 'note', label: displayTitle(n), degree: 0, cluster: 0, noteId: n.id })
   for (const n of notes) {
     const from = `n:${n.id}`
     for (const target of parseLinks(n.body)) {
@@ -73,17 +75,69 @@ export function buildGraph(notes: Note[]): Graph {
       if (hit) connect(from, `n:${hit.id}`, 'link')
       else {
         const gid = `g:${target}`
-        if (!nodes.has(gid)) nodes.set(gid, { id: gid, kind: 'ghost', label: target, degree: 0 })
+        if (!nodes.has(gid)) nodes.set(gid, { id: gid, kind: 'ghost', label: target, degree: 0, cluster: 0 })
         connect(from, gid, 'link')
       }
     }
     for (const tag of parseTags(n.body)) {
       const tid = `t:${tag}`
-      if (!nodes.has(tid)) nodes.set(tid, { id: tid, kind: 'tag', label: `#${tag}`, degree: 0 })
+      if (!nodes.has(tid)) nodes.set(tid, { id: tid, kind: 'tag', label: `#${tag}`, degree: 0, cluster: 0 })
       connect(from, tid, 'tag')
     }
   }
-  return { nodes: [...nodes.values()], edges: [...edges.values()] }
+  const list = [...nodes.values()]
+  assignClusters(list, [...edges.values()])
+  return { nodes: list, edges: [...edges.values()] }
+}
+
+/** Connected components, numbered by size (largest first). Single nodes share the last colour. */
+function assignClusters(nodes: GNode[], edges: GEdge[]) {
+  const parent = new Map(nodes.map((n) => [n.id, n.id]))
+  const find = (x: string): string => {
+    while (parent.get(x) !== x) {
+      parent.set(x, parent.get(parent.get(x)!)!)
+      x = parent.get(x)!
+    }
+    return x
+  }
+  for (const e of edges) parent.set(find(e.a), find(e.b))
+  const size = new Map<string, number>()
+  for (const n of nodes) size.set(find(n.id), (size.get(find(n.id)) ?? 0) + 1)
+  const order = [...size.entries()].sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1)).map(([root]) => root)
+  const rank = new Map(order.map((r, i) => [r, i]))
+  for (const n of nodes) n.cluster = rank.get(find(n.id))!
+}
+
+export interface GraphStats {
+  notes: number
+  links: number
+  tags: number
+  /** Connected groups with at least two nodes. */
+  clusters: number
+  /** Notes with no link in or out and no tag. */
+  orphans: number
+  /** Share of possible note-to-note links that exist, 0..1. */
+  density: number
+  hub: { label: string; degree: number } | null
+}
+
+export function graphStats(g: Graph): GraphStats {
+  const notes = g.nodes.filter((n) => n.kind === 'note')
+  const links = g.edges.filter((e) => e.kind === 'link').length
+  const sizes = new Map<number, number>()
+  for (const n of g.nodes) sizes.set(n.cluster, (sizes.get(n.cluster) ?? 0) + 1)
+  const hub = [...notes].sort((a, b) => b.degree - a.degree)[0]
+  const pairs = (notes.length * (notes.length - 1)) / 2
+  const noteLinks = g.edges.filter((e) => e.kind === 'link' && e.a.startsWith('n:') && e.b.startsWith('n:')).length
+  return {
+    notes: notes.length,
+    links,
+    tags: g.nodes.filter((n) => n.kind === 'tag').length,
+    clusters: [...sizes.values()].filter((v) => v > 1).length,
+    orphans: notes.filter((n) => n.degree === 0).length,
+    density: pairs ? noteLinks / pairs : 0,
+    hub: hub && hub.degree > 0 ? { label: hub.label, degree: hub.degree } : null,
+  }
 }
 
 /** Notes that link to this one. */
