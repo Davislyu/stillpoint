@@ -14,6 +14,7 @@ export function Pet() {
   const { prefs } = useThemeCtx()
   const [adopting, setAdopting] = useState(false)
   const pet = prefs.pet
+  if (prefs.petOff) return null
   return (
     <>
       <div className="pet-lane pointer-events-none fixed inset-x-0 z-[25]" aria-live="polite">

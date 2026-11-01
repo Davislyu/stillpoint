@@ -17,12 +17,21 @@ const NEEDS = [
 ] as const
 
 export function PetPanel() {
-  const { prefs } = useThemeCtx()
+  const { prefs, setPetOff } = useThemeCtx()
   const { care, level, stage, accessory, charm } = usePetCare()
   const [open, setOpen] = useState(false)
   const pet = prefs.pet
   const next = STAGES.find((s) => s.from > level)
   const nextAcc = ACCESSORIES.find((a) => a.from > level)
+
+  if (prefs.petOff) {
+    return (
+      <Panel id="pet" title="Your companion" hint="Switched off. Nothing is on your screen."
+        actions={<Button variant="ghost" size="sm" onClick={() => setPetOff(false)}>Bring back</Button>}>
+        <p className="text-[13px] text-muted">{prefs.pet ? `${prefs.pet.name} is resting and will be right where you left them.` : 'You can hatch an egg whenever you like.'}</p>
+      </Panel>
+    )
+  }
 
   return (
     <Panel id="pet" title={pet ? pet.name : 'Your companion'} hint={pet ? `${SPECIES_INFO[pet.species].label} · ${stage.name} · ${care.label}` : 'An egg is waiting for you.'}

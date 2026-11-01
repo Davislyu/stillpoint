@@ -9,7 +9,7 @@ import { SPECIES, type Species } from './types'
 /** Pick a companion and name it. Also used to swap companions later (progress stays: it is all derived). */
 export function AdoptPet({ onClose }: { onClose: () => void }) {
   const { today } = useStore()
-  const { prefs, setPet } = useThemeCtx()
+  const { prefs, setPet, setPetOff } = useThemeCtx()
   const [species, setSpecies] = useState<Species>(prefs.pet?.species ?? 'fox')
   const [name, setName] = useState(prefs.pet?.name ?? '')
   useEffect(() => {
@@ -63,9 +63,18 @@ export function AdoptPet({ onClose }: { onClose: () => void }) {
             placeholder="Pip"
             className="field mt-1 h-11 w-full rounded-xl px-3 text-ink placeholder:text-muted"
           />
-          <div className="mt-5 flex justify-end gap-2">
+          <div className="mt-5 flex flex-wrap justify-end gap-2">
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setPetOff(true)
+                onClose()
+              }}
+            >
+              {prefs.pet ? 'Remove companion' : 'No pet, thanks'}
+            </Button>
             <Button variant="ghost" onClick={onClose}>
-              Later
+              Cancel
             </Button>
             <Button
               variant="primary"
