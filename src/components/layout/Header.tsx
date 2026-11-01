@@ -1,6 +1,7 @@
 import { SyncIndicator } from './SyncIndicator'
 import { lazy, Suspense, useState } from 'react'
 import { PlayerChip } from '../game/PlayerChip'
+import { HideToggle } from '../ui/HideToggle'
 import { UserMenu } from './UserMenu'
 
 const AppearanceDialog = lazy(() => import('./AppearanceDialog').then((m) => ({ default: m.AppearanceDialog })))
@@ -14,7 +15,7 @@ const PaletteIcon = () => (
   </svg>
 )
 
-export function Header({ onHero }: { onHero?: () => void }) {
+export function Header({ onHero, onArrange }: { onHero?: () => void; onArrange?: () => void }) {
   const [themesOpen, setThemesOpen] = useState(false)
   return (
     <div className="app-header mx-auto flex max-w-[1240px] items-center justify-between gap-3 px-4 pt-[max(1.25rem,env(safe-area-inset-top))] sm:px-6 lg:px-8">
@@ -35,6 +36,16 @@ export function Header({ onHero }: { onHero?: () => void }) {
         >
           <PaletteIcon /> <span className="hidden sm:inline">Theme</span>
         </button>
+        <HideToggle />
+        {onArrange && (
+          <button
+            onClick={onArrange}
+            className="btn hidden h-8 items-center gap-1.5 rounded-full border border-line px-3 text-[13px] text-ink-2 hover:text-ink lg:inline-flex"
+            title="Drag panels around and resize them"
+          >
+            Arrange
+          </button>
+        )}
         <UserMenu />
       </div>
       {themesOpen && (

@@ -10,7 +10,7 @@ import { ObservationsHub } from './components/journal/ObservationsHub'
 import { Header } from './components/layout/Header'
 import { MobileNav, type View } from './components/layout/MobileNav'
 import { Onboarding } from './components/dashboard/AuraPicker'
-import { AURA_BY_ID, isAdmin, layoutFromAura, PANEL_TAB, sanitizeHidden, visibleTabs, type PanelId } from './dashboard/layout'
+import { arrangementFrom, AURA_BY_ID, isAdmin, layoutFromAura, PANEL_TAB, sanitizeHidden, visibleTabs, type PanelId } from './dashboard/layout'
 import { useThemeCtx } from './themes/vibe'
 import { SpendingLedger } from './components/money/SpendingLedger'
 import { Splash } from './auth/AuthGate'
@@ -197,6 +197,14 @@ export default function App() {
     <GameProvider>
       <div id="top" className="min-h-dvh pb-[calc(6.5rem+env(safe-area-inset-bottom))] lg:pb-12">
         <Header
+          onArrange={
+            layout
+              ? () => {
+                  if (!layout.order) setLayout({ ...layout, ...arrangementFrom(layout) })
+                  setArranging(true)
+                }
+              : undefined
+          }
           onHero={
             heroOn
               ? () => {

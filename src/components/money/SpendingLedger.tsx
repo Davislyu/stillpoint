@@ -1,3 +1,5 @@
+import { HideToggle } from '../ui/HideToggle'
+import { Veil } from '../ui/Veil'
 import { useState } from 'react'
 import { addMonths, longDate, monthLabel, monthOf, type MonthKey } from '../../lib/date'
 import { categoryLabel, useMoney } from '../../lib/money'
@@ -44,6 +46,8 @@ export function SpendingLedger() {
       title="Extra spendings"
       hint="Leaks count against you. Unavoidable payments can be marked justified and never will."
       actions={
+        <div className="flex items-center gap-2">
+        <HideToggle />
         <div role="radiogroup" aria-label="Currency" className="flex rounded-full border border-line p-0.5">
           {CURRENCIES.map((c) => (
             <button
@@ -58,8 +62,10 @@ export function SpendingLedger() {
             </button>
           ))}
         </div>
+        </div>
       }
     >
+      <Veil>
       <div className="rounded-xl bg-bg px-4 py-4">
         <div className="flex items-center justify-between">
           <IconButton aria-label="Previous month" disabled={month <= oldest} onClick={() => setMonth(addMonths(month, -1))} className="disabled:opacity-30">
@@ -128,6 +134,7 @@ export function SpendingLedger() {
           Nothing logged for {month === current ? 'this month yet' : 'this month'}.
         </p>
       )}
+      </Veil>
     </Panel>
   )
 }
