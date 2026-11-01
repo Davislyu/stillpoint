@@ -19,7 +19,7 @@
       // Apply the saved theme before first paint so there's no flash of the default.
       try {
         var p = JSON.parse(localStorage.getItem('stillpoint:prefs') || 'null') || {};
-        var mode = p.mode || localStorage.getItem('stillpoint:theme') || 'system';
+        var mode = p.mode || localStorage.getItem('stillpoint:theme') || 'dark';
         var theme = p.theme || 'stillpoint';
         var bgs = { geek: '#030603', bullet: '#f6f1e4', synthwave: '#12062b', manuscript: '#efe3c8', brutalist: '#efefe9',
           pocket: '#9bbc0f', zen: '#f1efe9', blueprint: '#0d3b66', retro: '#008080', cottage: '#eef0e2', kawaii: '#fff0f6', abyss: '#020d1a', ravenmoor: '#0b0a0c' };

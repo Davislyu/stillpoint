@@ -5,6 +5,7 @@ import { Greeting } from './components/dashboard/Greeting'
 import { StatStrip } from './components/dashboard/StatStrip'
 import { TodaysFocus } from './components/dashboard/TodaysFocus'
 import { HabitList } from './components/habits/HabitList'
+import { MonthGrid } from './components/habits/MonthGrid'
 import { HistoryStrip } from './components/habits/HistoryStrip'
 import { ObservationsHub } from './components/journal/ObservationsHub'
 import { Header } from './components/layout/Header'
@@ -36,7 +37,7 @@ import { useStore } from './state/store'
 import type { DateKey } from './state/types'
 
 const QuickLog = lazy(() => import('./components/dashboard/QuickLog'))
-const MAIN: PanelId[] = ['stats', 'week', 'hunt', 'focus', 'quests', 'habits', 'history', 'notes', 'journal', 'brain']
+const MAIN: PanelId[] = ['stats', 'week', 'hunt', 'focus', 'quests', 'habits', 'month', 'history', 'notes', 'journal', 'brain']
 const ASIDE: PanelId[] = ['hero', 'calendar', 'meals', 'workouts', 'lifts', 'spending']
 
 export default function App() {
@@ -152,6 +153,8 @@ export default function App() {
         return <QuestBoard />
       case 'habits':
         return <HabitList date={selectedDay} onBackToToday={backToToday} />
+      case 'month':
+        return <MonthGrid />
       case 'history':
         return <HistoryStrip selected={selectedDay} onSelect={setSelectedDay} />
       case 'notes':

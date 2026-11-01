@@ -9,6 +9,7 @@ export type PanelId =
   | 'focus'
   | 'quests'
   | 'habits'
+  | 'month'
   | 'history'
   | 'calendar'
   | 'notes'
@@ -24,6 +25,7 @@ export type Tab = 'today' | 'body' | 'notes' | 'money' | 'hero'
 
 export const PANELS: { id: PanelId; label: string; hint: string; tab: Tab }[] = [
   { id: 'habits', label: 'Daily habits', hint: 'Tick off the things you do every day.', tab: 'today' },
+  { id: 'month', label: 'Month grid', hint: 'The whole month at a glance: habits by day, with weekly colour bands.', tab: 'today' },
   { id: 'stats', label: 'Stats strip', hint: 'Streak, meals and workouts at a glance.', tab: 'today' },
   { id: 'week', label: 'This week', hint: 'Goals you set, plus a recap of the week to share.', tab: 'today' },
   { id: 'hunt', label: 'The hunt', hint: 'Gothic monsters that your effort slays. Loot drops.', tab: 'today' },
@@ -151,11 +153,11 @@ export const AURAS: Aura[] = [
   {
     id: 'quiet-wanderer',
     name: 'Quiet Wanderer',
-    tagline: 'Calm slate, just the essentials. The original Stillpoint.',
+    tagline: 'Dark, quiet, minimal. Habits and the month, nothing extra.',
     emblem: '◎',
     theme: 'stillpoint',
     featured: null,
-    hidden: ['hunt', 'quests'],
+    hidden: ['hunt', 'quests', 'focus', 'calendar', 'history', 'week', 'journal', 'brain', 'lifts'],
     starter: [['Gym', 'clay'], ['Stretch', 'sage'], ['Drink 3L water', 'teal'], ['Cardio', 'dusk']],
   },
   {
@@ -192,7 +194,7 @@ export interface PanelSize {
 
 /** Panels that sit in the narrow side column of the classic layout. */
 export const CLASSIC_ASIDE: PanelId[] = ['hero', 'calendar', 'meals', 'workouts', 'lifts', 'spending']
-export const defaultSpan = (id: PanelId) => (id === 'stats' ? GRID_COLS : CLASSIC_ASIDE.includes(id) ? 4 : 8)
+export const defaultSpan = (id: PanelId) => (id === 'stats' || id === 'month' ? GRID_COLS : CLASSIC_ASIDE.includes(id) ? 4 : 8)
 
 export interface Layout {
   aura: AuraId
@@ -240,7 +242,7 @@ function normalizeSizes(raw: unknown): Layout['sizes'] | undefined {
  */
 export function arrangementFrom(layout: Layout): Pick<Required<Layout>, 'order' | 'sizes'> {
   const hidden = new Set(layout.hidden)
-  const main = (['week', 'hunt', 'focus', 'quests', 'habits', 'history', 'notes', 'journal', 'brain'] as PanelId[])
+  const main = (['week', 'hunt', 'focus', 'quests', 'habits', 'month', 'history', 'notes', 'journal', 'brain'] as PanelId[])
   const side = CLASSIC_ASIDE
   const order: PanelId[] = ['stats']
   const m = main.filter((id) => !hidden.has(id))

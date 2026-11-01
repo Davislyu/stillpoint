@@ -96,10 +96,10 @@ function load(): Preferences {
       }
     }
     const legacy = localStorage.getItem(LEGACY_MODE_KEY)
-    const mode: Mode = legacy === 'light' || legacy === 'dark' ? legacy : 'system'
+    const mode: Mode = legacy === 'light' || legacy === 'dark' ? legacy : 'dark'
     return { theme: 'stillpoint', mode, themesTried: ['stillpoint'], currency: defaultCurrency(), equipped: {}, layout: null, goals: DEFAULT_GOALS, reminder: DEFAULT_REMINDER, mealsPerDay: 5, restDays: {} }
   } catch {
-    return { theme: 'stillpoint', mode: 'system', themesTried: ['stillpoint'], currency: 'USD', equipped: {}, layout: null, goals: DEFAULT_GOALS, reminder: DEFAULT_REMINDER, mealsPerDay: 5, restDays: {} }
+    return { theme: 'stillpoint', mode: 'dark', themesTried: ['stillpoint'], currency: 'USD', equipped: {}, layout: null, goals: DEFAULT_GOALS, reminder: DEFAULT_REMINDER, mealsPerDay: 5, restDays: {} }
   }
 }
 

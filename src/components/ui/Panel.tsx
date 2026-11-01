@@ -23,10 +23,10 @@ export function Panel({ title, hint, actions, children, className = '', id }: Pa
     >
       <header className="mb-4 flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
         <div className="min-w-0 flex-[1_1_11rem]">
-          <h2 id={headingId} data-text={vibe.title(title)} className="panel-title font-display text-[1.05rem] font-semibold tracking-[-0.01em] text-ink">
+          <h2 id={headingId} data-text={vibe.title(title)} className="panel-title font-display text-[0.95rem] font-medium tracking-[-0.005em] text-ink">
             {vibe.title(title)}
           </h2>
-          {hint && <p className="panel-hint mt-0.5 text-[13px] text-muted">{hint}</p>}
+          {hint && <p className="panel-hint mt-0.5 text-[12.5px] leading-snug text-muted">{hint}</p>}
         </div>
         {actions && <div className="flex shrink-0 items-center gap-1">{actions}</div>}
       </header>
