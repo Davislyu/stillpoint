@@ -163,7 +163,7 @@ export function computeCombat({ state, today, stats, questsDoneByDay, equippedId
     if (a) featsByDay.set(day, (featsByDay.get(day) ?? 0) + Math.round(RARITY_XP[a.rarity] / 5))
   }
   const spendByDay = new Map<DateKey, number>()
-  for (const s of state.spendings) spendByDay.set(s.date, (spendByDay.get(s.date) ?? 0) + 1)
+  for (const s of state.spendings) if (!s.justified) spendByDay.set(s.date, (spendByDay.get(s.date) ?? 0) + 1)
 
   const fresh: string[] = []
   const overflowByWeek = new Map<DateKey, number>()

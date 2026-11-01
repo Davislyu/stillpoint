@@ -48,6 +48,8 @@ export type SpendingRow = {
   amount: number
   description: string
   category: SpendingCategory
+  /** A payment you can't avoid; logged, but kept out of progress. */
+  justified?: boolean
 }
 
 export type NoteRow = {
@@ -119,7 +121,7 @@ export const TABLES: Record<TableName, TableSpec> = {
   non_essential_spendings: {
     key: ['id'],
     onConflict: 'id',
-    columns: 'id,user_id,date,amount,description,category',
+    columns: 'id,user_id,date,amount,description,category,justified',
   },
   notes: {
     key: ['id'],

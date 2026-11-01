@@ -7,7 +7,7 @@ import { rollDrop } from './loot'
 import { computeStats } from './stats'
 
 const TODAY = '2026-10-31'
-const empty = (): AppState => ({ habits: [], completions: {}, milestones: {}, observations: {}, meals: {}, workouts: {}, spendings: [], mealsPerDay: 5, notes: [], exercises: [] })
+const empty = (): AppState => ({ habits: [], completions: {}, milestones: {}, observations: {}, meals: {}, workouts: {}, spendings: [], mealsPerDay: 5, restDays: {}, notes: [], exercises: [] })
 const hab = (n: number) => Array.from({ length: n }, (_, i) => ({ id: `h${i}`, name: `H${i}`, accent: 'sage' as const, createdOn: addDays(TODAY, -3) }))
 const fullMeals = () => Object.fromEntries([1, 2, 3, 4, 5].map((n) => [n, { isCompleted: true, notes: '' }]))
 const run = (s: AppState, equipped: Record<string, string> = {}) =>
@@ -43,7 +43,7 @@ describe('daily hunt', () => {
     s.habits = hab(4)
     s.completions[TODAY] = ['h0']
     const before = run(s).today.fights[0].hp
-    s.spendings = [{ id: 'x', date: TODAY, amountCents: 1500, description: 'Snack', category: 'impulse' }]
+    s.spendings = [{ id: 'x', date: TODAY, amountCents: 1500, description: 'Snack', category: 'impulse', justified: false }]
     expect(run(s).today.fights[0].hp).toBe(before + 8)
   })
 

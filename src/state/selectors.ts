@@ -10,6 +10,9 @@ export const WINDOW_DAYS = 14
 export const isActiveOn = (h: Habit, day: DateKey) =>
   h.createdOn <= day && (!h.archivedOn || h.archivedOn > day)
 
+/** A day the person skipped on purpose. */
+export const isRest = (s: Pick<AppState, 'restDays'>, day: DateKey) => !!s.restDays?.[day]
+
 export const activeHabits = (s: AppState, day: DateKey) => s.habits.filter((h) => isActiveOn(h, day))
 
 export const isDone = (s: AppState, id: string, day: DateKey) => (s.completions[day] ?? []).includes(id)
@@ -43,7 +46,14 @@ export function currentStreak(s: AppState, today: DateKey): number {
   let streak = 0
   // 3650-day guard keeps a corrupted save from looping forever.
   for (let i = 0; i < 3650; i++) {
-    if (!qualifies(completionOn(s, day))) break
+    if (!qualifies(completionOn(s, day))) {
+      // a day off is skipped over: it neither adds to the streak nor ends it
+      if (isRest(s, day)) {
+        day = addDays(day, -1)
+        continue
+      }
+      break
+    }
     streak++
     day = addDays(day, -1)
   }
@@ -77,8 +87,8 @@ export function streakInfo(s: AppState, today: DateKey): StreakInfo {
     if (qualifies(c)) {
       info.streak++
       if (info.streak % SHIELD_EVERY === 0 && info.shields < MAX_SHIELDS) info.shields++
-    } else if (day === today || c.share === null) {
-      // today is still in progress, and days with nothing tracked are neutral
+    } else if (day === today || c.share === null || isRest(s, day)) {
+      // today is still in progress; days with nothing tracked, and days off, are neutral
     } else if (info.streak > 0) {
       if (info.shields > 0) {
         info.shields--
@@ -112,5 +122,11 @@ export const recentWeeks = (today: DateKey, n: number) =>
 
 export const spendingsInMonth = (s: AppState, month: MonthKey) => s.spendings.filter((x) => x.date.startsWith(month))
 
+/** Payments that count against progress; justified ones are tracked but left out. */
+export const countedSpendings = (s: AppState) => s.spendings.filter((x) => !x.justified)
+
+export const monthJustifiedCents = (s: AppState, month: MonthKey) =>
+  spendingsInMonth(s, month).filter((x) => x.justified).reduce((sum, x) => sum + x.amountCents, 0)
+
 export const monthTotalCents = (s: AppState, month: MonthKey) =>
-  spendingsInMonth(s, month).reduce((sum, x) => sum + x.amountCents, 0)
+  spendingsInMonth(s, month).filter((x) => !x.justified).reduce((sum, x) => sum + x.amountCents, 0)

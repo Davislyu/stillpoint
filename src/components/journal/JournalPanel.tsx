@@ -1,29 +1,16 @@
 import { useMemo, useState } from 'react'
 import { buildEntries, filterEntries, flashback, journalStats, level, readMinutes, snippet, type Entry, type Kind } from '../../journal/entries'
 import { addDays, fromKey, longDate, startOfWeek } from '../../lib/date'
+import { useHide } from '../../hooks/useHide'
 import { useStore } from '../../state/store'
 import type { DateKey } from '../../state/types'
 import { Button } from '../ui/Button'
 import { inputClass } from '../ui/Field'
+import { HideToggle } from '../ui/HideToggle'
 import { Panel } from '../ui/Panel'
+import { SpendingJournal } from './SpendingJournal'
 
 const WEEKS = 26
-const HIDE_KEY = 'stillpoint.journal.hide'
-const readHide = () => {
-  try {
-    return localStorage.getItem(HIDE_KEY) === '1'
-  } catch {
-    return false
-  }
-}
-
-const LockIcon = ({ open }: { open: boolean }) => (
-  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <rect x="5" y="11" width="14" height="9" rx="2" />
-    <path d={open ? 'M8 11V8a4 4 0 0 1 7.5-2' : 'M8 11V8a4 4 0 0 1 8 0v3'} />
-  </svg>
-)
-
 const heat = (lv: number) => (lv === 0 ? 'var(--surface-2)' : `color-mix(in oklab, var(--accent-teal) ${[0, 28, 50, 75, 100][lv]}%, var(--surface-2))`)
 
 function Heatmap({ entries, today, active, onPick }: { entries: Entry[]; today: DateKey; active: DateKey | null; onPick: (d: DateKey) => void }) {
@@ -113,22 +100,14 @@ export function JournalPanel({ onEdit }: { onEdit?: (d: DateKey) => void }) {
   const [kind, setKind] = useState<Kind>('all')
   const [open, setOpen] = useState<DateKey | null>(null)
   const [shown, setShown] = useState(15)
-  const [hide, setHide] = useState(readHide)
+  const [hide] = useHide()
+  const [tab, setTab] = useState<'writing' | 'spending'>('writing')
 
   const entries = useMemo(() => buildEntries(state.observations), [state.observations])
   const stats = useMemo(() => journalStats(entries, today), [entries, today])
   const list = useMemo(() => filterEntries(entries, q, kind), [entries, q, kind])
   const back = useMemo(() => flashback(entries, today), [entries, today])
 
-  const toggleHide = () => {
-    const next = !hide
-    setHide(next)
-    try {
-      localStorage.setItem(HIDE_KEY, next ? '1' : '0')
-    } catch {
-      /* private mode */
-    }
-  }
   const pick = (d: DateKey) => {
     setOpen(d)
     setQ('')
@@ -143,19 +122,22 @@ export function JournalPanel({ onEdit }: { onEdit?: (d: DateKey) => void }) {
     <Panel
       id="journal"
       title="Journal"
-      hint="Everything you wrote under Thinking and observations. Private to your account."
+      hint={tab === 'writing' ? 'Everything you wrote under Thinking and observations. Private to your account.' : 'Log every payment, then read the month. Private to your account.'}
       actions={
-        <button
-          type="button"
-          onClick={toggleHide}
-          aria-pressed={hide}
-          className="inline-flex h-8 items-center gap-1.5 rounded-full border border-line px-2.5 font-mono text-[11px] text-ink-2 hover:bg-surface-2"
-          title="Blur the text on screen, for when someone is looking over your shoulder"
-        >
-          <LockIcon open={!hide} /> {hide ? 'hidden' : 'visible'}
-        </button>
+        <HideToggle />
       }
     >
+      <div className="mb-3 flex gap-1" role="tablist" aria-label="Journal sections">
+        {(['writing', 'spending'] as const).map((t) => (
+          <button key={t} type="button" role="tab" aria-selected={tab === t} onClick={() => setTab(t)} className={`h-8 rounded-full border px-3.5 font-mono text-[12px] ${tab === t ? 'border-ink-2 bg-surface-2 text-ink' : 'border-line text-muted hover:text-ink'}`}>
+            {t === 'writing' ? 'Thinking' : 'Spending'}
+          </button>
+        ))}
+      </div>
+      {tab === 'spending' ? (
+        <SpendingJournal hide={hide} />
+      ) : (
+        <>
       <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line font-mono sm:grid-cols-5" aria-label="Journal statistics">
         {(
           [
@@ -216,6 +198,8 @@ export function JournalPanel({ onEdit }: { onEdit?: (d: DateKey) => void }) {
               </Button>
             </div>
           )}
+        </>
+      )}
         </>
       )}
     </Panel>

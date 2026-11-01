@@ -18,16 +18,18 @@ interface Props {
   onSelect: (noteId: string) => void
   onTag?: (tag: string | null) => void
   activeTag?: string | null
+  /** Draw no labels (privacy). */
+  hideLabels?: boolean
 }
 
 /** The notes as a neural network inside a brain. Canvas, paused off-screen and for reduced motion. */
-export function BrainGraph({ notes, selectedId, onSelect, onTag, activeTag }: Props) {
+export function BrainGraph({ notes, selectedId, onSelect, onTag, activeTag, hideLabels }: Props) {
   const wrap = useRef<HTMLDivElement>(null)
   const canvas = useRef<HTMLCanvasElement>(null)
   const sim = useRef(new Simulation())
   const graph = useMemo(() => buildGraph(notes), [notes])
-  const live = useRef({ graph, selectedId, activeTag, onSelect, onTag })
-  live.current = { graph, selectedId, activeTag, onSelect, onTag }
+  const live = useRef({ graph, selectedId, activeTag, onSelect, onTag, hideLabels })
+  live.current = { graph, selectedId, activeTag, onSelect, onTag, hideLabels }
   const hover = useRef<string | null>(null)
   const kick = useRef<() => void>(() => {})
 
@@ -82,7 +84,7 @@ export function BrainGraph({ notes, selectedId, onSelect, onTag, activeTag }: Pr
     }
 
     function draw(now: number) {
-      const { graph: g, selectedId: sel, activeTag: tag } = live.current
+      const { graph: g, selectedId: sel, activeTag: tag, hideLabels: noLabels } = live.current
       const s = sim.current
       ctx.save()
       ctx.setTransform(1, 0, 0, 1, 0, 0)
@@ -193,7 +195,7 @@ export function BrainGraph({ notes, selectedId, onSelect, onTag, activeTag }: Pr
           ctx.stroke()
         }
         const showLabel = isSel || hover.current === n.id || (!hasFocus && !tagSet && gn.kind === 'note' && gn.degree >= 2) || (hasFocus && focus.has(n.id)) || (tagSet && tagSet.has(n.id))
-        if (showLabel) {
+        if (showLabel && !noLabels) {
           ctx.globalAlpha = dim ? 0.3 : 0.95
           ctx.font = `${isSel ? 600 : 400} 6.5px ${MONO}`
           ctx.textAlign = 'left'
@@ -313,7 +315,7 @@ export function BrainGraph({ notes, selectedId, onSelect, onTag, activeTag }: Pr
     }
   }, [])
 
-  useEffect(() => kick.current(), [selectedId, activeTag])
+  useEffect(() => kick.current(), [selectedId, activeTag, hideLabels])
 
   return (
     <div ref={wrap} className="relative aspect-[4/3] w-full overflow-hidden rounded-lg border border-line bg-bg" data-testid="brain-graph">

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { addMonths, longDate, monthLabel, monthOf, type MonthKey } from '../../lib/date'
 import { categoryLabel, useMoney } from '../../lib/money'
 import { CURRENCIES } from '../../themes/vibe'
-import { monthTotalCents, spendingsInMonth } from '../../state/selectors'
+import { monthJustifiedCents, monthTotalCents, spendingsInMonth } from '../../state/selectors'
 import { useStore } from '../../state/store'
 import { IconButton } from '../ui/Button'
 import { XIcon } from '../ui/Icons'
@@ -21,6 +21,7 @@ export function SpendingLedger() {
   const current = monthOf(today)
   const [month, setMonth] = useState<MonthKey>(current)
   const total = monthTotalCents(state, month)
+  const justifiedTotal = monthJustifiedCents(state, month)
   const previous = monthTotalCents(state, addMonths(month, -1))
   const entries = spendingsInMonth(state, month)
   const oldest = addMonths(current, -12) // matches the server's loaded window
@@ -41,7 +42,7 @@ export function SpendingLedger() {
     <Panel
       id="spending"
       title="Extra spendings"
-      hint="Only the leaks: coffee, subscriptions, impulse buys. Not groceries or bills."
+      hint="Leaks count against you. Unavoidable payments can be marked justified and never will."
       actions={
         <div role="radiogroup" aria-label="Currency" className="flex rounded-full border border-line p-0.5">
           {CURRENCIES.map((c) => (
@@ -74,7 +75,8 @@ export function SpendingLedger() {
         </p>
         <p className="mt-2 text-center text-[13px] text-muted">
           in extras {month === current ? 'so far this month' : 'that month'}
-          {entries.length > 0 && `, across ${entries.length} ${entries.length === 1 ? 'entry' : 'entries'}`}.
+          {entries.length > 0 && `, across ${entries.filter((e) => !e.justified).length} ${entries.filter((e) => !e.justified).length === 1 ? 'entry' : 'entries'}`}.
+          {justifiedTotal > 0 && <span className="block">Plus {formatCents(justifiedTotal)} justified, not counted.</span>}
           {comparison && <span className="block">{comparison}</span>}
         </p>
       </div>
@@ -94,6 +96,16 @@ export function SpendingLedger() {
                   .map((e) => (
                     <li key={e.id} className="flex items-center gap-3 py-1.5 text-sm">
                       <span className="min-w-0 flex-1 truncate text-ink">{e.description}</span>
+                      <button
+                        type="button"
+                        aria-pressed={e.justified}
+                        aria-label={`${e.justified ? 'Unmark' : 'Mark'} ${e.description} as justified`}
+                        title={e.justified ? 'Justified: not counted. Tap to count it.' : 'Tap to mark as justified (not counted)'}
+                        onClick={() => dispatch({ type: 'spending/justify', id: e.id, justified: !e.justified })}
+                        className={`shrink-0 rounded-full border px-2 py-0.5 text-[11px] ${e.justified ? 'border-ink-2 bg-surface-2 text-ink' : 'border-line text-muted hover:text-ink'}`}
+                      >
+                        Justified
+                      </button>
                       <span className="shrink-0 rounded-full bg-surface-2 px-2 py-0.5 text-[11px] text-muted">
                         {categoryLabel(e.category)}
                       </span>

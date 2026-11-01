@@ -107,6 +107,7 @@ export function computeStats(s: AppState, today: DateKey): PlayerStats {
   const spendByMonth = new Map<string, number>()
   const categoryCounts: Record<string, number> = {}
   for (const x of s.spendings) {
+    if (x.justified) continue // unavoidable payments never count against progress
     spendByDay.set(x.date, (spendByDay.get(x.date) ?? 0) + 1)
     spendByMonth.set(monthOf(x.date), (spendByMonth.get(monthOf(x.date)) ?? 0) + x.amountCents)
     categoryCounts[x.category] = (categoryCounts[x.category] ?? 0) + 1
@@ -117,7 +118,7 @@ export function computeStats(s: AppState, today: DateKey): PlayerStats {
     ...Object.keys(s.completions),
     ...Object.keys(s.meals),
     ...Object.keys(s.observations),
-    ...s.spendings.map((x) => x.date),
+    ...s.spendings.filter((x) => !x.justified).map((x) => x.date),
     ...s.habits.map((h) => h.createdOn),
   ].filter((d) => d <= today)
   const firstDay = candidates.length ? candidates.reduce((a, b) => (a < b ? a : b)) : null
@@ -129,13 +130,14 @@ export function computeStats(s: AppState, today: DateKey): PlayerStats {
     mealsLogged: 0, fullMealDays: 0, bestFullMealStreak: 0, mealNotes: 0, mealSlot: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
     workoutsTotal: 0, fullWeeks: 0, bestFullWeekStreak: 0, bestWorkoutMonth: 0,
     noteDays: 0, bestNoteStreak: 0, criticalEntries: 0, wordsTotal: 0, longestEntryWords: 0, bothNotesDays: 0,
-    spendLogged: s.spendings.length, categoryCounts, monthsImproved: 0, noSpendDays: 0, bestMonthLeak: null,
+    spendLogged: s.spendings.filter((x) => !x.justified).length, categoryCounts, monthsImproved: 0, noSpendDays: 0, bestMonthLeak: null,
     activeDays: 0, currentActiveStreak: 0, bestActiveStreak: 0, comebacks: 0, fullPartyDays: 0, weekendPerfects: 0,
     activeMonthDays: new Set(), days: [],
   }
   if (!firstDay) return st
 
-  const firstSpend = s.spendings.length ? s.spendings.reduce((a, b) => (a.date < b.date ? a : b)).date : null
+  const counted = s.spendings.filter((x) => !x.justified)
+  const firstSpend = counted.length ? counted.reduce((a, b) => (a.date < b.date ? a : b)).date : null
   let streak = 0, perfectRun = 0, mealRun = 0, noteRun = 0, activeRun = 0, gap = 0, seenActive = false
   const span = Math.min(daysBetween(firstDay, today), 3650)
 

@@ -1,11 +1,13 @@
 import { addDays, startOfWeek } from '../lib/date'
-import { completionOn, mealSlots } from '../state/selectors'
+import { completionOn, isRest, mealSlots } from '../state/selectors'
 import type { AppState, DateKey } from '../state/types'
 
 export interface WeekSummary {
   start: DateKey
   end: DateKey
   days: DateKey[]
+  /** Days marked as a day off this week. */
+  restDays: number
   /** Days at half or more of habits done. */
   habitDays: number
   perfectDays: number
@@ -25,13 +27,14 @@ export function summarizeWeek(s: AppState, today: DateKey): WeekSummary {
   const start = startOfWeek(today)
   const days = Array.from({ length: 7 }, (_, i) => addDays(start, i))
   const out: WeekSummary = {
-    start, end: days[6], days, habitDays: 0, perfectDays: 0, ticks: 0, meals: 0, noteDays: 0,
+    start, end: days[6], days, restDays: days.filter((d) => isRest(s, d)).length, habitDays: 0, perfectDays: 0, ticks: 0, meals: 0, noteDays: 0,
     workouts: s.workouts[start] ?? 0, noSpendDays: 0, extrasCents: 0, extrasCount: 0,
     kills: { minion: 0, elite: 0, boss: 0 }, bestDay: null,
   }
   const first = s.habits.reduce<DateKey | null>((a, h) => (a === null || h.createdOn < a ? h.createdOn : a), null)
   const spendDays = new Map<DateKey, number>()
   for (const x of s.spendings) {
+    if (x.justified) continue
     if (x.date < start || x.date > days[6]) continue
     spendDays.set(x.date, (spendDays.get(x.date) ?? 0) + 1)
     out.extrasCents += x.amountCents

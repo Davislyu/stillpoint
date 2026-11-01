@@ -19,7 +19,8 @@ export type Action =
   | { type: 'meal/toggle'; date: DateKey; meal: MealNumber }
   | { type: 'meal/note'; date: DateKey; meal: MealNumber; notes: string }
   | { type: 'workout/set'; weekStart: DateKey; count: number }
-  | { type: 'spending/add'; date: DateKey; amountCents: number; description: string; category: SpendingCategory }
+  | { type: 'spending/add'; date: DateKey; amountCents: number; description: string; category: SpendingCategory; justified?: boolean }
+  | { type: 'spending/justify'; id: string; justified: boolean }
   | { type: 'spending/remove'; id: string }
   | { type: 'note/create'; id: string; date: DateKey; title: string; body: string }
   | { type: 'note/edit'; id: string; title?: string; body?: string }
@@ -142,9 +143,13 @@ export function actionToOps(action: Action, t: TableStore, userId: string): Op[]
           amount: action.amountCents / 100,
           description,
           category: action.category,
+          // Only sent when set, so ordinary entries keep working.
+          ...(action.justified ? { justified: true } : {}),
         }),
       ]
     }
+    case 'spending/justify':
+      return t.non_essential_spendings[action.id] ? [update('non_essential_spendings', action.id, { justified: action.justified })] : []
     case 'note/create':
       return [upsert('notes', { id: action.id, user_id: userId, date: action.date, title: action.title.slice(0, 120), body: action.body.slice(0, 20000) })]
     case 'note/edit': {

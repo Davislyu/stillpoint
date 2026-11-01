@@ -13,6 +13,7 @@ export function toAppState(t: TableStore): AppState {
 
   return {
     mealsPerDay: 5,
+    restDays: {},
     habits: Object.values(t.habits).map((h) => ({
       id: h.id,
       name: h.name,
@@ -37,6 +38,7 @@ export function toAppState(t: TableStore): AppState {
         amountCents: Math.round(Number(s.amount) * 100),
         description: s.description,
         category: s.category,
+        justified: s.justified === true,
       }))
       .sort((a, b) => b.date.localeCompare(a.date)),
     notes: Object.values(t.notes ?? {})

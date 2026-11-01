@@ -34,12 +34,17 @@ export const CATEGORIES: { id: SpendingCategory; label: string }[] = [
   { id: 'impulse', label: 'Impulse buy' },
   { id: 'entertainment', label: 'Entertainment' },
   { id: 'other', label: 'Other' },
+  { id: 'groceries', label: 'Groceries' },
+  { id: 'bills', label: 'Bills & taxes' },
+  { id: 'transport', label: 'Transport' },
+  { id: 'health', label: 'Health' },
+  { id: 'shopping', label: 'Shopping' },
 ]
 export const categoryLabel = (id: SpendingCategory) => CATEGORIES.find((c) => c.id === id)?.label ?? 'Other'
 
 /**
- * This ledger is for leaks only. Descriptions that clearly name an essential
- * cost are turned away with a note, so the monthly total stays meaningful.
+ * Descriptions that clearly name an unavoidable cost (arnona, rent, bills).
+ * The form suggests marking them Justified so they don't count against progress.
  */
 const ESSENTIAL = /\b(grocer(y|ies)|supermarket|rent|mortgage|electric(ity)?|water bill|gas bill|utilit(y|ies)|insurance|tuition|medical|pharmacy|prescription|tax(es)?|arnona|va'ad bayit|vaad bayit|shufersal|rami levy)\b/i
 export const looksEssential = (description: string) => ESSENTIAL.test(description)

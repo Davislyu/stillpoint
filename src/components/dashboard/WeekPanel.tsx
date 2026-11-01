@@ -55,7 +55,9 @@ export function WeekPanel() {
   const set = (k: keyof WeeklyGoals) => (n: number) => setGoals({ ...g, [k]: n })
   const loot = game.combat.inventory.filter((i) => i.date >= w.start && i.date <= w.end)
   const slain = w.kills.minion + w.kills.elite + w.kills.boss
-  const allDone = w.workouts >= g.workouts && w.habitDays >= g.habitDays && w.noSpendDays >= g.noSpendDays
+  // days off shrink the goal so a sick week can still be a won week
+  const habitGoal = Math.max(0, Math.min(g.habitDays, 7 - w.restDays))
+  const allDone = w.workouts >= g.workouts && w.habitDays >= habitGoal && w.noSpendDays >= g.noSpendDays
   const sunday = today === w.end
 
   const share = async () => {
@@ -83,7 +85,7 @@ export function WeekPanel() {
       }
     >
       <ul className="space-y-4">
-        <Goal label="Strong habit days" value={w.habitDays} goal={g.habitDays} edit={edit} onGoal={set('habitDays')} max={7} />
+        <Goal label="Strong habit days" value={w.habitDays} goal={edit ? g.habitDays : habitGoal} edit={edit} onGoal={set('habitDays')} max={7} />
         <Goal label="Workouts" value={w.workouts} goal={g.workouts} edit={edit} onGoal={set('workouts')} max={4} />
         <Goal label="No-spend days" value={w.noSpendDays} goal={g.noSpendDays} edit={edit} onGoal={set('noSpendDays')} max={7} />
       </ul>

@@ -6,6 +6,7 @@ import type { DateKey } from '../../state/types'
 import { Button } from '../ui/Button'
 import { Panel } from '../ui/Panel'
 import { AddHabitForm } from './AddHabitForm'
+import { DayOff } from './DayOff'
 import { HabitRow } from './HabitRow'
 
 interface Props {
@@ -51,6 +52,7 @@ export function HabitList({ date, onBackToToday }: Props) {
         )
       }
     >
+      {!editing && <DayOff date={date} />}
       {habits.length === 0 ? (
         <p className="py-2 text-sm text-muted">
           {isToday ? 'No habits yet. Add one below.' : 'No habits to show for this day.'}

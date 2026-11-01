@@ -21,6 +21,7 @@ export function useReminder() {
       const now = new Date()
       const [h, m] = time.split(':').map(Number)
       if (now.getHours() * 60 + now.getMinutes() < h * 60 + m) return
+      if (state.restDays[today]) return // a day off needs no nudge
       if (activeHabits(state, today).length === 0) return
       const { done, total } = completionOn(state, today)
       if (done >= total) return

@@ -4,7 +4,7 @@ import { mealSlots, mealsDone } from './selectors'
 import type { AppState } from './types'
 
 const base = (mealsPerDay: number): AppState => ({
-  habits: [], completions: {}, milestones: {}, observations: {}, workouts: {}, spendings: [], notes: [], exercises: [], mealsPerDay,
+  habits: [], completions: {}, milestones: {}, observations: {}, workouts: {}, spendings: [], notes: [], exercises: [], mealsPerDay, restDays: {},
   meals: { '2026-10-31': { 1: { isCompleted: true, notes: '' }, 2: { isCompleted: true, notes: '' }, 3: { isCompleted: true, notes: '' }, 5: { isCompleted: true, notes: '' } } },
 })
 

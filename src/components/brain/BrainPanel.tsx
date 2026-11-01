@@ -3,7 +3,9 @@ import { buildGraph, displayTitle, excerpt, graphStats, isDateTitle, parseTags, 
 import { uid } from '../../lib/id'
 import { longDate } from '../../lib/date'
 import { useStore } from '../../state/store'
+import { useHide } from '../../hooks/useHide'
 import { Button } from '../ui/Button'
+import { HideToggle } from '../ui/HideToggle'
 import { inputClass } from '../ui/Field'
 import { PlusIcon } from '../ui/Icons'
 import { Panel } from '../ui/Panel'
@@ -17,6 +19,7 @@ export function BrainPanel() {
   const [selected, setSelected] = useState<string | null>(null)
   const [tag, setTag] = useState<string | null>(null)
   const [q, setQ] = useState('')
+  const [hide] = useHide()
   const stats = useMemo(() => graphStats(buildGraph(notes)), [notes])
   const missing = backend.missingTables?.().includes('notes') ?? false
   const current = notes.find((n) => n.id === selected) ?? null
@@ -43,9 +46,12 @@ export function BrainPanel() {
       title="Second brain"
       hint="A knowledge graph of your notes. Connect ideas with [[Title]], group them with #topic."
       actions={
-        <Button size="sm" variant="primary" onClick={openToday}>
-          <PlusIcon /> Today
-        </Button>
+        <>
+          <HideToggle />
+          <Button size="sm" variant="primary" onClick={openToday}>
+            <PlusIcon /> Today
+          </Button>
+        </>
       }
     >
       {missing && (
@@ -53,7 +59,7 @@ export function BrainPanel() {
           Notes need a one-time database update before they can be saved. Run the notes migration in Supabase, then reload.
         </p>
       )}
-      <BrainGraph notes={notes} selectedId={selected} onSelect={setSelected} onTag={setTag} activeTag={tag} />
+      <BrainGraph notes={notes} selectedId={selected} onSelect={setSelected} onTag={setTag} activeTag={tag} hideLabels={hide} />
 
       <dl className="mt-2 grid grid-cols-3 gap-px overflow-hidden rounded-lg border border-line bg-line font-mono sm:grid-cols-6" aria-label="Graph statistics">
         {[
@@ -93,7 +99,7 @@ export function BrainPanel() {
 
       {current && (
         <div className="mt-3">
-          <NoteEditor key={current.id} note={current} notes={notes} onOpen={setSelected} onClose={() => setSelected(null)} />
+          <NoteEditor key={current.id} hide={hide} note={current} notes={notes} onOpen={setSelected} onClose={() => setSelected(null)} />
         </div>
       )}
 
@@ -105,10 +111,10 @@ export function BrainPanel() {
             <li key={n.id}>
               <button type="button" onClick={() => setSelected(n.id)} aria-current={n.id === selected ? 'true' : undefined} className={`block w-full px-1 py-2.5 text-left hover:bg-surface-2 ${n.id === selected ? 'bg-surface-2' : ''}`}>
                 <span className="flex items-baseline justify-between gap-3">
-                  <span className="truncate text-sm font-medium text-ink">{isDateTitle(n.title) ? longDate(n.title) : displayTitle(n)}</span>
+                  <span className={`truncate text-sm font-medium text-ink ${hide ? 'blur-[5px] select-none' : ''}`}>{isDateTitle(n.title) ? longDate(n.title) : displayTitle(n)}</span>
                   <span className="shrink-0 font-mono text-[11px] text-muted tabular">{n.date}</span>
                 </span>
-                {n.body && <span className="mt-0.5 block truncate font-mono text-[11px] text-muted">{excerpt(n.body)}</span>}
+                {n.body && <span className={`mt-0.5 block truncate font-mono text-[11px] text-muted ${hide ? 'blur-[5px] select-none' : ''}`}>{excerpt(n.body)}</span>}
               </button>
             </li>
           ))}

@@ -50,8 +50,10 @@ export function HistoryStrip({ selected, onSelect }: Props) {
             const isSelected = d.date === selected
             const isToday = d.date === today
             const strong = d.share !== null && d.share >= STREAK_THRESHOLD
-            const label =
-              pct === null
+            const off = state.restDays[d.date]
+            const label = off
+              ? `${longDate(d.date)}: day off (${off})`
+              : pct === null
                 ? `${longDate(d.date)}: not tracked`
                 : `${longDate(d.date)}: ${pct}% (${d.done} of ${d.total})`
             return (
@@ -65,7 +67,13 @@ export function HistoryStrip({ selected, onSelect }: Props) {
                   className={`col group relative w-full overflow-hidden rounded-full border transition-colors h-[var(--col-h)] ${
                     isSelected ? 'border-ink-2' : 'border-line hover:border-line-strong'
                   } ${pct === null ? 'bg-transparent' : 'bg-surface-2'}`}
+                  data-off={off ? 'true' : undefined}
                 >
+                  {off && (
+                    <span aria-hidden="true" className="absolute inset-0 grid place-items-center text-[11px] text-muted" style={{ background: 'repeating-linear-gradient(135deg, transparent 0 4px, var(--line) 4px 5px)' }}>
+                      <span className="rounded bg-bg px-0.5">off</span>
+                    </span>
+                  )}
                   <span
                     className="col-fill fill-col absolute inset-x-0 bottom-0 rounded-full"
                     style={{
@@ -93,6 +101,9 @@ export function HistoryStrip({ selected, onSelect }: Props) {
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span className="size-2.5 rounded-full bg-line-strong" aria-hidden="true" /> Under half
+        </span>
+        <span className="inline-flex items-center gap-1.5">
+          <span className="size-2.5 rounded-sm border border-line-strong" style={{ background: 'repeating-linear-gradient(135deg, transparent 0 2px, var(--line-strong) 2px 3px)' }} aria-hidden="true" /> Day off
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span className="w-4 border-t border-dashed border-line-strong" aria-hidden="true" /> Streak line
