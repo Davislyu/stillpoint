@@ -21,8 +21,8 @@ export function Panel({ title, hint, actions, children, className = '', id }: Pa
       aria-labelledby={headingId}
       className={`panel rounded-2xl border border-line bg-surface p-5 sm:p-6 ${className}`}
     >
-      <header className="mb-4 flex items-start justify-between gap-4">
-        <div className="min-w-0">
+      <header className="mb-4 flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
+        <div className="min-w-0 flex-[1_1_11rem]">
           <h2 id={headingId} data-text={vibe.title(title)} className="panel-title font-display text-[1.05rem] font-semibold tracking-[-0.01em] text-ink">
             {vibe.title(title)}
           </h2>

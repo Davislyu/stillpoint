@@ -233,3 +233,48 @@ html, body { overflow-x: clip; }
    a wallpaper (retro) they use the panel colour instead. */
 .bg-float { background-color: var(--bg); }
 [data-theme='retro'] .bg-float { background-color: var(--surface); }
+
+/* ── Phone polish (iOS-style) ─────────────────────────────────────────── */
+html { touch-action: manipulation; }
+
+/* Tabs fade up a few pixels, like a native view change. */
+@media (max-width: 1023px) and (prefers-reduced-motion: no-preference) {
+  .tab-in { animation: tab-in 260ms cubic-bezier(.3,.7,.2,1) both; }
+}
+@keyframes tab-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* Fingers: every small control gets an invisible 44pt hit area without changing the layout.
+   Lives in the base layer so utilities such as .absolute and .fixed still win. */
+@layer base {
+  @media (pointer: coarse) {
+    button:not(.no-hit), [role='radio'], [role='switch'], summary { position: relative; }
+    button:not(.no-hit)::after, [role='radio']::after, [role='switch']::after {
+      content: '';
+      position: absolute;
+      inset: -6px;
+    }
+  }
+}
+
+/* Bottom sheets: grabber, home-indicator padding, and a swipe-down-to-close drag (sheetDrag.ts). */
+@media (max-width: 639px) {
+  .sheet { padding-bottom: env(safe-area-inset-bottom); will-change: transform; }
+  .sheet::before {
+    content: '';
+    display: block;
+    flex: none;
+    width: 2.5rem;
+    height: 5px;
+    margin: 8px auto 0;
+    border-radius: 9999px;
+    background: var(--line-strong);
+    opacity: 0.8;
+  }
+  .sheet.dragging { transition: none; }
+  .sheet.settling { transition: transform 220ms cubic-bezier(.3,.7,.2,1); }
+}
+.sheet.dragging, .sheet.settling { animation: none; }
+@media (max-width: 639px) and (prefers-reduced-motion: no-preference) {
+  .sheet.anim-rise { animation: sheet-up 380ms cubic-bezier(.2,.8,.2,1) both; }
+}
+@keyframes sheet-up { from { transform: translateY(100%); } to { transform: none; } }

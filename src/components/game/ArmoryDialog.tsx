@@ -67,7 +67,7 @@ export function ArmoryDialog({ onClose, initialTab = 'gear' }: { onClose: () => 
         aria-modal="true"
         aria-labelledby="armory-title"
         onClick={(e) => e.stopPropagation()}
-        className="panel anim-rise flex max-h-[92dvh] w-full max-w-4xl flex-col overflow-hidden rounded-t-3xl border border-line bg-bg shadow-2xl sm:rounded-3xl"
+        className="sheet panel anim-rise flex max-h-[92dvh] w-full max-w-4xl flex-col overflow-hidden rounded-t-3xl border border-line bg-bg shadow-2xl sm:rounded-3xl"
       >
         <header className="border-b border-line px-5 pt-5 pb-3 sm:px-7">
           <div className="flex items-start justify-between gap-4">

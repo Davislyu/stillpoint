@@ -134,7 +134,7 @@ export default function App() {
   /** Phones show one tab at a time; desktop shows everything. */
   const tabOf = (id: PanelId): View => (id === featured ? 'today' : PANEL_TAB[id])
   const wrap = (id: PanelId, node: ReactNode) => (
-    <div key={id} className={tabOf(id) === view ? '' : 'hidden lg:block'}>
+    <div key={id} className={tabOf(id) === view ? 'tab-in' : 'hidden lg:block'}>
       {node}
     </div>
   )
@@ -218,10 +218,10 @@ export default function App() {
         {arranged ? (
           <main className="mx-auto mt-6 max-w-[1240px] px-4 sm:px-6 lg:mt-8 lg:px-8">
             <div className="mb-5 flex flex-col gap-5 lg:mb-6">
-              <div className={view === 'today' ? '' : 'hidden lg:block'}>
+              <div className={view === 'today' ? 'tab-in' : 'hidden lg:block'}>
                 <Greeting />
               </div>
-              <div className={view === 'today' ? '' : 'hidden'}>
+              <div className={view === 'today' ? 'tab-in' : 'hidden'}>
                 <FirstWeek />
               </div>
             </div>
@@ -230,7 +230,7 @@ export default function App() {
               sizes={layout.sizes ?? {}}
               editing={arranging}
               render={panel}
-              itemClass={(id) => (tabOf(id) === view ? '' : 'hidden lg:block')}
+              itemClass={(id) => (tabOf(id) === view ? 'tab-in' : 'hidden lg:block')}
               onChange={saveArrangement}
             />
           </main>
@@ -239,10 +239,10 @@ export default function App() {
             className={`mx-auto mt-6 grid max-w-[1240px] gap-5 px-4 sm:px-6 lg:mt-8 lg:gap-8 lg:px-8 ${asideIds.length ? 'lg:grid-cols-[minmax(0,1fr)_24rem]' : 'lg:max-w-3xl'}`}
           >
             <div className="flex min-w-0 flex-col gap-5">
-              <div className={view === 'today' ? '' : 'hidden lg:block'}>
+              <div className={view === 'today' ? 'tab-in' : 'hidden lg:block'}>
                 <Greeting />
               </div>
-              <div className={view === 'today' ? '' : 'hidden'}>
+              <div className={view === 'today' ? 'tab-in' : 'hidden'}>
                 <FirstWeek />
               </div>
               {featured && wrap(featured, panel(featured))}
@@ -259,7 +259,7 @@ export default function App() {
           type="button"
           onClick={() => setQuick(true)}
           aria-label="Quick log"
-          className="btn btn-primary fixed right-4 bottom-[calc(6.25rem+env(safe-area-inset-bottom))] z-20 grid size-14 place-items-center rounded-full bg-ink text-2xl text-bg shadow-[0_10px_30px_-8px_rgba(0,0,0,0.55)] transition-transform duration-150 select-none active:scale-90 lg:right-8 lg:bottom-8"
+          className="btn btn-primary fixed right-4 bottom-[calc(6.25rem+env(safe-area-inset-bottom))] z-20 grid size-12 place-items-center rounded-full bg-ink text-2xl text-bg shadow-[0_10px_30px_-8px_rgba(0,0,0,0.55)] transition-transform duration-150 select-none active:scale-90 lg:right-8 lg:bottom-8"
         >
           <span aria-hidden="true" className="-mt-0.5 leading-none">+</span>
         </button>

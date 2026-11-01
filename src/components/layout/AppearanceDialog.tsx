@@ -78,7 +78,7 @@ export function AppearanceDialog({ onClose }: { onClose: () => void }) {
         aria-labelledby="appearance-title"
         tabIndex={-1}
         onClick={(e) => e.stopPropagation()}
-        className="anim-rise flex max-h-[92dvh] w-full max-w-5xl flex-col overflow-hidden rounded-t-3xl border border-line bg-bg shadow-2xl outline-none sm:rounded-3xl"
+        className="sheet anim-rise flex max-h-[92dvh] w-full max-w-5xl flex-col overflow-hidden rounded-t-3xl border border-line bg-bg shadow-2xl outline-none sm:rounded-3xl"
       >
         <header className="flex flex-wrap items-end justify-between gap-4 border-b border-line px-5 pt-5 pb-4 sm:px-7">
           <div className="min-w-0">

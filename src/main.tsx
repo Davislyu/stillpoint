@@ -1,4 +1,5 @@
 import { StrictMode } from 'react'
+import { installSheetDrag } from './hooks/sheetDrag'
 import { createRoot } from 'react-dom/client'
 import App from './App'
 import { AuthGate } from './auth/AuthGate'
@@ -25,6 +26,8 @@ function SignedIn({ backend, user }: { backend: Backend; user: AuthUser }) {
     </AuthActionsContext.Provider>
   )
 }
+
+installSheetDrag()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

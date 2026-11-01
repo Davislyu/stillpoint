@@ -15,10 +15,11 @@ export function HideToggle() {
       type="button"
       onClick={toggle}
       aria-pressed={hide}
+      aria-label={hide ? 'Hidden on screen. Tap to show' : 'Hide private numbers and text on screen'}
       className="inline-flex h-8 items-center gap-1.5 rounded-full border border-line px-2.5 font-mono text-[11px] text-ink-2 hover:bg-surface-2"
       title="Blur the text on screen, for when someone is looking over your shoulder"
     >
-      <LockIcon open={!hide} /> {hide ? 'hidden' : 'visible'}
+      <LockIcon open={!hide} /> <span className="hidden sm:inline">{hide ? 'hidden' : 'visible'}</span>
     </button>
   )
 }
