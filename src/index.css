@@ -278,3 +278,23 @@ html { touch-action: manipulation; }
   .sheet.anim-rise { animation: sheet-up 380ms cubic-bezier(.2,.8,.2,1) both; }
 }
 @keyframes sheet-up { from { transform: translateY(100%); } to { transform: none; } }
+
+/* ── Pet ───────────────────────────────────────────────────────────────── */
+.pet-lane { bottom: calc(4.6rem + env(safe-area-inset-bottom)); }
+@media (min-width: 1024px) { .pet-lane { bottom: 0.25rem; } }
+@keyframes pet-idle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes pet-walk { 0%, 100% { transform: translateY(0); } 25% { transform: translateY(-5px); } 50% { transform: translateY(0); } 75% { transform: translateY(-5px); } }
+@keyframes pet-heart { 0% { opacity: 0; transform: translateY(0) scale(0.6); } 20% { opacity: 1; } 100% { opacity: 0; transform: translateY(-34px) scale(1.2); } }
+@keyframes pet-zzz { 0%, 100% { opacity: 0.35; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-4px); } }
+.pet-idle > * { animation: pet-idle 1.6s steps(2, jump-none) infinite; }
+.pet-walk > * { animation: pet-walk 0.5s steps(1, jump-none) infinite; }
+.pet-heart { animation: pet-heart 1.1s ease-out both; pointer-events: none; }
+.pet-zzz { animation: pet-zzz 2.2s ease-in-out infinite; font-family: var(--font-display); }
+@media (prefers-reduced-motion: reduce) { .pet-idle > *, .pet-walk > *, .pet-zzz { animation: none; } }
+
+/* ── Chests ────────────────────────────────────────────────────────────── */
+@keyframes chest-wiggle { 0%, 70%, 100% { transform: rotate(0); } 75% { transform: rotate(-5deg); } 85% { transform: rotate(5deg); } 95% { transform: rotate(-3deg); } }
+@keyframes chest-pop { from { opacity: 0; transform: translateY(14px) scale(0.92); } to { opacity: 1; transform: none; } }
+.chest-wiggle { animation: chest-wiggle 2.4s ease-in-out infinite; transform-origin: 50% 90%; }
+.chest-pop { animation: chest-pop 420ms cubic-bezier(.2,.8,.2,1) both; }
+@media (prefers-reduced-motion: reduce) { .chest-wiggle, .chest-pop { animation: none; } }

@@ -8,6 +8,9 @@ export type PanelId =
   | 'hunt'
   | 'focus'
   | 'quests'
+  | 'chest'
+  | 'season'
+  | 'pet'
   | 'habits'
   | 'month'
   | 'history'
@@ -19,12 +22,16 @@ export type PanelId =
   | 'lifts'
   | 'workouts'
   | 'spending'
+  | 'log'
   | 'hero'
 
 export type Tab = 'today' | 'body' | 'notes' | 'money' | 'hero'
 
 export const PANELS: { id: PanelId; label: string; hint: string; tab: Tab }[] = [
   { id: 'habits', label: 'Daily habits', hint: 'Tick off the things you do every day.', tab: 'today' },
+  { id: 'chest', label: 'Daily chest', hint: 'A new chest each day, full of finds. Better days, better chests.', tab: 'today' },
+  { id: 'season', label: 'Season pass', hint: 'Seven goals per season, a star each, with keepsakes to earn.', tab: 'today' },
+  { id: 'pet', label: 'Companion', hint: 'A pet that lives on the screen and reacts to your day.', tab: 'today' },
   { id: 'month', label: 'Month grid', hint: 'The whole month at a glance: habits by day, with weekly colour bands.', tab: 'today' },
   { id: 'stats', label: 'Stats strip', hint: 'Streak, meals and workouts at a glance.', tab: 'today' },
   { id: 'week', label: 'This week', hint: 'Goals you set, plus a recap of the week to share.', tab: 'today' },
@@ -40,6 +47,7 @@ export const PANELS: { id: PanelId; label: string; hint: string; tab: Tab }[] = 
   { id: 'workouts', label: 'Workouts', hint: 'Four sessions a week.', tab: 'body' },
   { id: 'lifts', label: 'Lifts & PRs', hint: 'Track your best weight per exercise in kg.', tab: 'body' },
   { id: 'spending', label: 'Extra spending', hint: 'Non-essential spending and the monthly total.', tab: 'money' },
+  { id: 'log', label: 'Monster log', hint: 'Every monster you have met: lore, region, first and last kill.', tab: 'hero' },
   { id: 'hero', label: 'Hero & achievements', hint: 'Level, class, gear and 338 achievements.', tab: 'hero' },
 ]
 /** Panels that can never be switched off. */
@@ -155,7 +163,7 @@ export const AURAS: Aura[] = [
     name: 'Quiet Wanderer',
     tagline: 'Dark, quiet, minimal. Habits and the month, nothing extra.',
     emblem: '◎',
-    theme: 'stillpoint',
+    theme: 'hearth',
     featured: null,
     hidden: ['hunt', 'quests', 'focus', 'calendar', 'history', 'week', 'journal', 'brain', 'lifts'],
     starter: [['Gym', 'clay'], ['Stretch', 'sage'], ['Drink 3L water', 'teal'], ['Cardio', 'dusk']],
@@ -193,7 +201,7 @@ export interface PanelSize {
 }
 
 /** Panels that sit in the narrow side column of the classic layout. */
-export const CLASSIC_ASIDE: PanelId[] = ['hero', 'calendar', 'meals', 'workouts', 'lifts', 'spending']
+export const CLASSIC_ASIDE: PanelId[] = ['chest', 'pet', 'hero', 'calendar', 'meals', 'workouts', 'lifts', 'spending']
 export const defaultSpan = (id: PanelId) => (id === 'stats' || id === 'month' ? GRID_COLS : CLASSIC_ASIDE.includes(id) ? 4 : 8)
 
 export interface Layout {
@@ -242,7 +250,7 @@ function normalizeSizes(raw: unknown): Layout['sizes'] | undefined {
  */
 export function arrangementFrom(layout: Layout): Pick<Required<Layout>, 'order' | 'sizes'> {
   const hidden = new Set(layout.hidden)
-  const main = (['week', 'hunt', 'focus', 'quests', 'habits', 'month', 'history', 'notes', 'journal', 'brain'] as PanelId[])
+  const main = (['week', 'hunt', 'focus', 'quests', 'habits', 'month', 'season', 'history', 'notes', 'journal', 'brain'] as PanelId[])
   const side = CLASSIC_ASIDE
   const order: PanelId[] = ['stats']
   const m = main.filter((id) => !hidden.has(id))

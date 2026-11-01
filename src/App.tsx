@@ -16,6 +16,11 @@ import { useThemeCtx } from './themes/vibe'
 import { SpendingLedger } from './components/money/SpendingLedger'
 import { Splash } from './auth/AuthGate'
 import { CalendarPanel } from './components/calendar/CalendarPanel'
+import { MonsterLogPanel } from './components/game/MonsterLog'
+import { ChestPanel } from './chest/ChestPanel'
+import { SeasonPanel } from './season/SeasonPanel'
+import { PetPanel } from './pet/PetPanel'
+import { Pet } from './pet/Pet'
 import { Celebration } from './components/game/Celebration'
 import { HeroPanel } from './components/game/HeroPanel'
 import { FirstWeek } from './components/dashboard/FirstWeek'
@@ -37,8 +42,8 @@ import { useStore } from './state/store'
 import type { DateKey } from './state/types'
 
 const QuickLog = lazy(() => import('./components/dashboard/QuickLog'))
-const MAIN: PanelId[] = ['stats', 'week', 'hunt', 'focus', 'quests', 'habits', 'month', 'history', 'notes', 'journal', 'brain']
-const ASIDE: PanelId[] = ['hero', 'calendar', 'meals', 'workouts', 'lifts', 'spending']
+const MAIN: PanelId[] = ['stats', 'week', 'hunt', 'focus', 'quests', 'habits', 'month', 'season', 'history', 'notes', 'journal', 'brain', 'log']
+const ASIDE: PanelId[] = ['chest', 'pet', 'hero', 'calendar', 'meals', 'workouts', 'lifts', 'spending']
 
 export default function App() {
   const { today, sync, engine, user } = useStore()
@@ -153,6 +158,12 @@ export default function App() {
         return <QuestBoard />
       case 'habits':
         return <HabitList date={selectedDay} onBackToToday={backToToday} />
+      case 'chest':
+        return <ChestPanel />
+      case 'season':
+        return <SeasonPanel />
+      case 'pet':
+        return <PetPanel />
       case 'month':
         return <MonthGrid />
       case 'history':
@@ -182,6 +193,8 @@ export default function App() {
         return <BrainPanel />
       case 'spending':
         return <SpendingLedger />
+      case 'log':
+        return <MonsterLogPanel />
       case 'hero':
         return <HeroPanel />
       case 'calendar':
@@ -218,6 +231,7 @@ export default function App() {
           }
         />
         <Celebration />
+        <Pet />
         {arranged ? (
           <main className="mx-auto mt-6 max-w-[1240px] px-4 sm:px-6 lg:mt-8 lg:px-8">
             <div className="mb-5 flex flex-col gap-5 lg:mb-6">

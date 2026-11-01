@@ -1,3 +1,4 @@
+import { normPet, type PetPref } from '../pet/types'
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { normalizeLayout, type Layout } from '../dashboard/layout'
 import { normRestDays } from '../state/rest'
@@ -58,6 +59,8 @@ export interface Preferences {
   mealsPerDay: number
   /** Days skipped on purpose (sick, holiday...). */
   restDays: Record<string, RestReason>
+  /** The pet that lives on the screen (null until adopted). */
+  pet: PetPref | null
 }
 
 const isCurrency = (v: unknown): v is Currency => v === 'ILS' || v === 'USD'
@@ -93,13 +96,14 @@ function load(): Preferences {
         reminder: normReminder(p.reminder),
         mealsPerDay: clampInt(p.mealsPerDay, 1, 5, 5),
         restDays: normRestDays(p.restDays),
+        pet: normPet(p.pet),
       }
     }
     const legacy = localStorage.getItem(LEGACY_MODE_KEY)
     const mode: Mode = legacy === 'light' || legacy === 'dark' ? legacy : 'dark'
-    return { theme: 'stillpoint', mode, themesTried: ['stillpoint'], currency: defaultCurrency(), equipped: {}, layout: null, goals: DEFAULT_GOALS, reminder: DEFAULT_REMINDER, mealsPerDay: 5, restDays: {} }
+    return { theme: 'hearth', mode, themesTried: ['hearth'], currency: defaultCurrency(), equipped: {}, layout: null, goals: DEFAULT_GOALS, reminder: DEFAULT_REMINDER, mealsPerDay: 5, restDays: {}, pet: null }
   } catch {
-    return { theme: 'stillpoint', mode: 'dark', themesTried: ['stillpoint'], currency: 'USD', equipped: {}, layout: null, goals: DEFAULT_GOALS, reminder: DEFAULT_REMINDER, mealsPerDay: 5, restDays: {} }
+    return { theme: 'hearth', mode: 'dark', themesTried: ['hearth'], currency: 'USD', equipped: {}, layout: null, goals: DEFAULT_GOALS, reminder: DEFAULT_REMINDER, mealsPerDay: 5, restDays: {}, pet: null }
   }
 }
 
@@ -118,6 +122,7 @@ export function normalizePrefs(raw: unknown): Partial<Preferences> {
   if ((r as { goals?: unknown }).goals) out.goals = normGoals((r as { goals?: unknown }).goals)
   if ((r as { reminder?: unknown }).reminder) out.reminder = normReminder((r as { reminder?: unknown }).reminder)
   if (typeof (r as { mealsPerDay?: unknown }).mealsPerDay === 'number') out.mealsPerDay = clampInt((r as { mealsPerDay?: unknown }).mealsPerDay, 1, 5, 5)
+  if ((r as { pet?: unknown }).pet) out.pet = normPet((r as { pet?: unknown }).pet)
   if ((r as { restDays?: unknown }).restDays) out.restDays = normRestDays((r as { restDays?: unknown }).restDays)
   return out
 }
@@ -153,6 +158,7 @@ interface ThemeCtx {
   setReminder: (reminder: Reminder) => void
   setMealsPerDay: (n: number) => void
   setRestDays: (days: Record<string, RestReason>) => void
+  setPet: (pet: PetPref | null) => void
   /** Id of the account whose preferences have been loaded (null before sign-in loads). */
   loadedFor: string | null
   /** Merge preferences loaded from the account (another device's choice). */
@@ -223,6 +229,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       setGoals: (goals) => update((p) => ({ ...p, goals: normGoals(goals) })),
       setReminder: (reminder) => update((p) => ({ ...p, reminder: normReminder(reminder) })),
       setRestDays: (days) => update((p) => ({ ...p, restDays: normRestDays(days) })),
+      setPet: (pet) => update((p) => ({ ...p, pet })),
       setMealsPerDay: (n) => update((p) => ({ ...p, mealsPerDay: clampInt(n, 1, 5, 5) })),
       loadedFor,
       adopt: (remote, owner) => {
@@ -240,6 +247,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
             reminder: remote.reminder ?? p.reminder,
             mealsPerDay: remote.mealsPerDay ?? p.mealsPerDay,
             restDays: remote.restDays ?? p.restDays,
+            pet: remote.pet ?? p.pet,
           }),
           false,
         )

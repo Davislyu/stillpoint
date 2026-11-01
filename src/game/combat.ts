@@ -13,7 +13,7 @@
 import { addDays, daysBetween, startOfWeek } from '../lib/date'
 import type { AppState, DateKey } from '../state/types'
 import { ACHIEVEMENT_BY_ID, RARITY_XP } from './achievements'
-import { BOSSES, ELITES, MINIONS, MONSTER_BY_ID, type Monster, type Source, type Tier } from './bestiary'
+import { ALL_BOSSES, ALL_ELITES, ALL_MINIONS, BOSSES, ELITES, MINIONS, MONSTER_BY_ID, NEW_ERA, type Monster, type Source, type Tier } from './bestiary'
 import { rollDrop, SLOTS, type Item, type Slot } from './loot'
 import { hash, type DayFacts, type PlayerStats } from './stats'
 
@@ -68,18 +68,28 @@ export interface Combat {
   kills: { minion: number; elite: number; boss: number }
   bossKinds: Set<string>
   slainCount: Map<string, number>
+  /** Per monster: how many times, and the first and last day it fell. */
+  log: Map<string, { count: number; first: DateKey; last: DateKey }>
+  /** The day of every kill, for seasons. */
+  killDates: DateKey[]
 }
 
 const scaleFor = (firstDay: DateKey | null, date: DateKey) =>
   Math.min(2, 1 + 0.03 * Math.floor(Math.max(0, firstDay ? daysBetween(firstDay, date) : 0) / 7))
 
 export function monstersFor(date: DateKey): [Monster, Monster, Monster] {
-  const a = MINIONS[hash(`${date}:m0`) % MINIONS.length]
-  let b = MINIONS[hash(`${date}:m1`) % MINIONS.length]
-  if (b.id === a.id) b = MINIONS[(MINIONS.indexOf(a) + 1) % MINIONS.length]
-  return [a, b, ELITES[hash(`${date}:e`) % ELITES.length]]
+  // Days before NEW_ERA keep the pools they always had, so history never changes.
+  const minions = date >= NEW_ERA ? ALL_MINIONS : MINIONS
+  const elites = date >= NEW_ERA ? ALL_ELITES : ELITES
+  const a = minions[hash(`${date}:m0`) % minions.length]
+  let b = minions[hash(`${date}:m1`) % minions.length]
+  if (b.id === a.id) b = minions[(minions.indexOf(a) + 1) % minions.length]
+  return [a, b, elites[hash(`${date}:e`) % elites.length]]
 }
-export const bossFor = (weekStart: DateKey): Monster => BOSSES[hash(`${weekStart}:boss`) % BOSSES.length]
+export const bossFor = (weekStart: DateKey): Monster => {
+  const pool = weekStart >= NEW_ERA ? ALL_BOSSES : BOSSES
+  return pool[hash(`${weekStart}:boss`) % pool.length]
+}
 
 /** Which monster a saved kill key refers to. */
 export function monsterOfKill(key: string): Monster | undefined {
@@ -234,12 +244,17 @@ export function computeCombat({ state, today, stats, questsDoneByDay, equippedId
   const kills = { minion: 0, elite: 0, boss: 0 }
   const bossKinds = new Set<string>()
   const slainCount = new Map<string, number>()
+  const log = new Map<string, { count: number; first: DateKey; last: DateKey }>()
+  const killDates: DateKey[] = allKills.map(dateOfKill)
   for (const k of allKills) {
     const t = tierOfKill(k)
     kills[t]++
     const m = monsterOfKill(k)
     if (m) {
       slainCount.set(m.id, (slainCount.get(m.id) ?? 0) + 1)
+      const d = dateOfKill(k)
+      const prev = log.get(m.id)
+      log.set(m.id, { count: (prev?.count ?? 0) + 1, first: prev && prev.first < d ? prev.first : d, last: prev && prev.last > d ? prev.last : d })
       if (t === 'boss') bossKinds.add(m.id)
     }
   }
@@ -254,6 +269,8 @@ export function computeCombat({ state, today, stats, questsDoneByDay, equippedId
     kills,
     bossKinds,
     slainCount,
+    log,
+    killDates,
   }
 }
 

@@ -5,6 +5,7 @@
  */
 
 export type ThemeId =
+  | 'hearth'
   | 'stillpoint'
   | 'geek'
   | 'bullet'
@@ -61,6 +62,22 @@ const base: Vibe = {
 }
 
 export const THEMES: ThemeDef[] = [
+  {
+    id: 'hearth',
+    name: 'Hearth',
+    tagline: 'A cosy night sky. Pixel type, a pet by the fire, tiny stars.',
+    scheme: 'dark',
+    swatch: ['#1a1430', '#251c42', '#f7efdc', '#ffd37a'],
+    vibe: {
+      ...base,
+      greeting: (g) => `${g}, traveller.`,
+      unlocked: 'New keepsake',
+      levelUp: 'You grew!',
+      quest: "Today's errands",
+      heroTab: 'Den',
+      slain: 'Banished',
+    },
+  },
   {
     id: 'ravenmoor',
     name: 'Ravenmoor',

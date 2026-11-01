@@ -1,12 +1,12 @@
+import { MonsterLogBody } from './MonsterLog'
 import { useEffect, useState } from 'react'
-import { ALL_MONSTERS, SOURCE_LABEL } from '../../game/bestiary'
+import { ALL_MONSTERS } from '../../game/bestiary'
 import { itemScore } from '../../game/combat'
 import { useGame } from '../../game/GameProvider'
 import { describeAffix, ITEM_COLOR, SLOT_LABEL, SLOTS, type Item, type Slot } from '../../game/loot'
 import { shortDate } from '../../lib/date'
 import { useThemeCtx } from '../../themes/vibe'
 import { Button } from '../ui/Button'
-import { MonsterPortrait } from './MonsterPortrait'
 
 function ItemCard({ item, equipped, onEquip }: { item: Item; equipped: boolean; onEquip?: () => void }) {
   const color = ITEM_COLOR[item.rarity]
@@ -129,25 +129,9 @@ export function ArmoryDialog({ onClose, initialTab = 'gear' }: { onClose: () => 
             )}
           </div>
         ) : (
-          <ul className="grid gap-2 overflow-y-auto px-5 py-4 sm:grid-cols-2 sm:px-7">
-            {ALL_MONSTERS.map((m) => {
-              const n = slainCount.get(m.id) ?? 0
-              return (
-                <li key={m.id} className={`flex items-center gap-3 rounded-xl border px-3 py-2.5 ${n ? 'border-line bg-surface' : 'border-dashed border-line'}`}>
-                  <MonsterPortrait monster={m} size={52} hidden={!n} className="text-ink" />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-ink">{n ? `${m.name}, ${m.title}` : '???'}</p>
-                    <p className="text-[12px] text-muted">
-                      {m.tier === 'boss' ? 'Weekly boss' : m.tier === 'elite' ? 'Elite' : 'Minion'}
-                      {n ? `. Weak to ${SOURCE_LABEL[m.weakness]}.` : '. Not yet slain.'}
-                    </p>
-                    {n > 0 && <p className="text-[12px] leading-snug text-ink-2 italic">{m.lore}</p>}
-                  </div>
-                  <span className="shrink-0 text-[12px] text-muted tabular">{n ? `×${n}` : ''}</span>
-                </li>
-              )
-            })}
-          </ul>
+          <div className="overflow-y-auto px-5 py-4 sm:px-7">
+            <MonsterLogBody />
+          </div>
         )}
       </div>
     </div>

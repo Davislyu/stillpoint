@@ -8,6 +8,7 @@ import type { ThemeId } from '../themes/registry'
 import { ACHIEVEMENT_BY_ID, ACHIEVEMENTS, isMeta, isReached, progressOf, type Achievement, type GameCtx } from './achievements'
 import { computeStats, hash, type DayFacts, type PlayerStats } from './stats'
 import { computeCombat, type Combat } from './combat'
+import { computeChests, type Chests } from '../chest/chest'
 
 // ── Levels ──────────────────────────────────────────────────────────────
 
@@ -141,6 +142,7 @@ export interface GameState {
   unlockedCount: number
   freshIds: string[]
   combat: Combat
+  chests: Chests
 }
 
 export function computeGame(state: AppState, today: DateKey, themesTried: ThemeId[], equippedIds: Record<string, string> = {}): GameState {
@@ -169,6 +171,7 @@ export function computeGame(state: AppState, today: DateKey, themesTried: ThemeI
     (sum, f) => sum + questResults(f, today).reduce((s, r) => s + (r.done ? r.quest.xp : 0), 0),
     0,
   )
+  const chests = computeChests(state.milestones, stats.days, today, addDays)
   const activityXp =
     stats.habitTicks * 10 +
     stats.perfectDays * 25 +
@@ -182,6 +185,7 @@ export function computeGame(state: AppState, today: DateKey, themesTried: ThemeI
     stats.spendLogged * 2 +
     stats.monthsImproved * 150 +
     questXp +
+    chests.xp +
     boardsCleared * 50
 
   const combat = computeCombat({ state, today, stats, questsDoneByDay, equippedIds })
@@ -261,6 +265,7 @@ export function computeGame(state: AppState, today: DateKey, themesTried: ThemeI
     unlockedCount: reached.size,
     freshIds: achievements.filter((v) => v.fresh).map((v) => v.a.id),
     combat,
+    chests,
   }
 }
 
