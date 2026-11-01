@@ -218,3 +218,18 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 
 /* Nothing may scroll the page sideways on a phone. */
 html, body { overflow-x: clip; }
+
+/* Hand-arranged dashboard: one column on phones, a 12-column grid on wide screens. */
+.dash-item { min-width: 0; }
+.dash-item > :first-child { height: 100%; }
+@media (min-width: 1024px) {
+  .dash-item {
+    grid-column: span var(--span, 12) / span var(--span, 12);
+    min-height: var(--min-h, 0px);
+  }
+}
+
+/* Floating bits (tooltips, menus, pills) need an opaque surface; on themes where the page colour is
+   a wallpaper (retro) they use the panel colour instead. */
+.bg-float { background-color: var(--bg); }
+[data-theme='retro'] .bg-float { background-color: var(--surface); }

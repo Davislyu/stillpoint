@@ -179,10 +179,28 @@ export const isAdmin = (email: string | null | undefined) => (email ?? '').trim(
 
 export const aurasFor = (email: string | null | undefined) => AURAS.filter((a) => !a.adminOnly || isAdmin(email))
 
+/** The dashboard is a 12-column grid on wide screens. */
+export const GRID_COLS = 12
+export const MIN_SPAN = 3
+export const MAX_HEIGHT = 1600
+export interface PanelSize {
+  /** Width in grid columns, 3 to 12. */
+  w: number
+  /** Minimum height in px; panels never clip, so this only makes them taller. */
+  h?: number
+}
+
+/** Panels that sit in the narrow side column of the classic layout. */
+export const CLASSIC_ASIDE: PanelId[] = ['hero', 'calendar', 'meals', 'workouts', 'lifts', 'spending']
+export const defaultSpan = (id: PanelId) => (id === 'stats' ? GRID_COLS : CLASSIC_ASIDE.includes(id) ? 4 : 8)
+
 export interface Layout {
   aura: AuraId
   hidden: PanelId[]
   featured: PanelId | null
+  /** Set once the person arranges panels by hand: every panel, in reading order. Absent = the classic layout. */
+  order?: PanelId[]
+  sizes?: Partial<Record<PanelId, PanelSize>>
   /** Account this layout belongs to (guards a shared device). */
   owner: string
 }
@@ -194,6 +212,47 @@ export const layoutFromAura = (aura: Aura, owner: string): Layout => ({
   owner,
 })
 
+const clampSpan = (n: unknown) => Math.min(GRID_COLS, Math.max(MIN_SPAN, Math.round(Number(n) || GRID_COLS)))
+
+/** Valid, de-duplicated order that always lists every panel (new panels join at the end). */
+export function normalizeOrder(raw: unknown): PanelId[] | undefined {
+  if (!Array.isArray(raw)) return undefined
+  const seen = new Set<PanelId>()
+  for (const id of raw) if (isPanelId(id)) seen.add(id)
+  for (const id of PANEL_IDS) seen.add(id)
+  return [...seen]
+}
+function normalizeSizes(raw: unknown): Layout['sizes'] | undefined {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return undefined
+  const out: NonNullable<Layout['sizes']> = {}
+  for (const [id, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (!isPanelId(id) || !v || typeof v !== 'object') continue
+    const { w, h } = v as { w?: unknown; h?: unknown }
+    const height = Number(h)
+    out[id] = { w: clampSpan(w), ...(Number.isFinite(height) && height > 0 ? { h: Math.min(MAX_HEIGHT, Math.round(height)) } : {}) }
+  }
+  return out
+}
+
+/**
+ * The classic two-column dashboard expressed as a grid: stats across the top, then
+ * each wide panel paired with a side panel. This is where hand-arranging starts.
+ */
+export function arrangementFrom(layout: Layout): Pick<Required<Layout>, 'order' | 'sizes'> {
+  const hidden = new Set(layout.hidden)
+  const main = (['week', 'hunt', 'focus', 'quests', 'habits', 'history', 'notes', 'journal', 'brain'] as PanelId[])
+  const side = CLASSIC_ASIDE
+  const order: PanelId[] = ['stats']
+  const m = main.filter((id) => !hidden.has(id))
+  const a = side.filter((id) => !hidden.has(id))
+  for (let i = 0; i < Math.max(m.length, a.length); i++) {
+    if (m[i]) order.push(m[i])
+    if (a[i]) order.push(a[i])
+  }
+  for (const id of PANEL_IDS) if (!order.includes(id)) order.push(id)
+  return { order, sizes: Object.fromEntries(PANEL_IDS.map((id) => [id, { w: defaultSpan(id) }])) }
+}
+
 export function normalizeLayout(raw: unknown): Layout | null {
   const r = raw as Partial<Layout> | null
   if (!r || typeof r !== 'object' || !isAuraId(r.aura) || typeof r.owner !== 'string') return null
@@ -202,6 +261,8 @@ export function normalizeLayout(raw: unknown): Layout | null {
     hidden: Array.isArray(r.hidden) ? sanitizeHidden([...new Set(r.hidden.filter(isPanelId))]) : [],
     featured: isPanelId(r.featured) ? r.featured : null,
     owner: r.owner,
+    ...(r.order ? { order: normalizeOrder(r.order) } : {}),
+    ...(r.sizes ? { sizes: normalizeSizes(r.sizes) } : {}),
   }
 }
 

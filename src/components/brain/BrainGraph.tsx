@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { buildGraph } from '../../brain/notes'
+import { css, ensureContrast, toRgb } from '../../brain/color'
 import { H, Simulation, W } from '../../brain/sim'
 import type { Note } from '../../state/types'
 
@@ -49,18 +50,22 @@ export function BrainGraph({ notes, selectedId, onSelect, onTag, activeTag, hide
     let scale = 1
     let t0 = performance.now()
     let drag: { id: string; moved: boolean } | null = null
+    let lastRead = 0
     let colors = { ink: '#ddd', muted: '#888', line: '#444', accent: '#8bd', warm: '#e96', surface: '#222', clusters: ['#8bd'] as string[] }
 
     const readColors = () => {
+      const bg = toRgb(getComputedStyle(box).backgroundColor) ?? [0, 0, 0]
+      const get = (name: string, fallback: string, min: number) => css(ensureContrast(toRgb(cssVar(box, name, fallback)) ?? [128, 128, 128], bg, min))
       colors = {
-        ink: cssVar(box, '--ink', colors.ink),
-        muted: cssVar(box, '--muted', colors.muted),
-        line: cssVar(box, '--line-strong', colors.line),
-        accent: cssVar(box, '--accent-teal', colors.accent),
-        warm: cssVar(box, '--accent-sand', colors.warm),
+        ink: get('--ink', colors.ink, 7),
+        muted: get('--muted', colors.muted, 3),
+        line: get('--line-strong', colors.line, 1.8),
+        accent: get('--accent-teal', colors.accent, 3),
+        warm: get('--accent-sand', colors.warm, 3),
         surface: cssVar(box, '--surface-2', colors.surface),
-        clusters: CLUSTER_VARS.map((v, i) => cssVar(box, v, colors.clusters[i] ?? colors.accent)),
+        clusters: CLUSTER_VARS.map((v, i) => get(v, colors.clusters[i] ?? colors.accent, 3)),
       }
+      lastRead = performance.now()
     }
     const resize = () => {
       const r = box.getBoundingClientRect()
@@ -84,13 +89,13 @@ export function BrainGraph({ notes, selectedId, onSelect, onTag, activeTag, hide
     }
 
     function draw(now: number) {
+      if (now - lastRead > 600) readColors() // themes swap stylesheets after load
       const { graph: g, selectedId: sel, activeTag: tag, hideLabels: noLabels } = live.current
       const s = sim.current
       ctx.save()
       ctx.setTransform(1, 0, 0, 1, 0, 0)
       ctx.clearRect(0, 0, cv.width, cv.height)
       ctx.restore()
-      void now
 
       // plot area: minor and major grid, frame, axis ticks
       ctx.lineWidth = 0.5
@@ -318,7 +323,7 @@ export function BrainGraph({ notes, selectedId, onSelect, onTag, activeTag, hide
   useEffect(() => kick.current(), [selectedId, activeTag, hideLabels])
 
   return (
-    <div ref={wrap} className="relative aspect-[4/3] w-full overflow-hidden rounded-lg border border-line bg-bg" data-testid="brain-graph">
+    <div ref={wrap} className="relative aspect-[4/3] w-full overflow-hidden rounded-lg border border-line bg-surface" data-testid="brain-graph">
       <canvas
         ref={canvas}
         className="absolute inset-0 size-full"

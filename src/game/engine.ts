@@ -85,13 +85,13 @@ const QUEST_GROUPS: QuestDef[][] = [
     { id: 'perfect', label: 'Finish every habit', xp: 45, done: (f) => f.share === 1 },
   ],
   [
-    { id: 'meals3', label: 'Eat 3 of your 5 meals', xp: 30, done: (f) => f.meals >= 3 },
+    { id: 'meals3', label: 'Eat most of your meals', xp: 30, done: (f) => f.meals >= Math.max(1, Math.ceil(f.mealTarget * 0.6)) },
     { id: 'meals5', label: 'Eat every planned meal', xp: 45, done: (f) => f.fullMeals },
-    { id: 'mealnote', label: 'Write notes on 2 meals', xp: 30, done: (f) => f.mealNotes >= 2 },
+    { id: 'mealnote', label: 'Add a note to a meal or two', xp: 30, done: (f) => f.mealNotes >= Math.min(2, f.mealTarget) },
   ],
   [
-    { id: 'words50', label: 'Write 50 words of notes', xp: 30, done: (f) => f.noteWords >= 50 },
-    { id: 'critical', label: 'Write some Extra Critical Thinking', xp: 30, done: (f) => f.hasCritical },
+    { id: 'words50', label: 'Write 50 words under Thinking and observations', xp: 30, done: (f) => f.noteWords >= 50 },
+    { id: 'critical', label: 'Fill in Extra Critical Thinking', xp: 30, done: (f) => f.hasCritical },
     { id: 'nospend', label: 'No extra spending today', xp: 30, done: (f) => f.spendCount === 0, endOfDay: true },
   ],
 ]

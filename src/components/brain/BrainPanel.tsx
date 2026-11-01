@@ -6,6 +6,7 @@ import { useStore } from '../../state/store'
 import { useHide } from '../../hooks/useHide'
 import { Button } from '../ui/Button'
 import { HideToggle } from '../ui/HideToggle'
+import { Veil } from '../ui/Veil'
 import { inputClass } from '../ui/Field'
 import { PlusIcon } from '../ui/Icons'
 import { Panel } from '../ui/Panel'
@@ -54,6 +55,7 @@ export function BrainPanel() {
         </>
       }
     >
+      <Veil>
       {missing && (
         <p className="mb-3 rounded-xl border border-line bg-surface-2 px-3 py-2 text-[13px] text-ink-2" role="status">
           Notes need a one-time database update before they can be saved. Run the notes migration in Supabase, then reload.
@@ -121,6 +123,7 @@ export function BrainPanel() {
           {shown.length === 0 && <li className="py-4 text-center text-sm text-muted">No matches.</li>}
         </ul>
       )}
+      </Veil>
     </Panel>
   )
 }

@@ -22,7 +22,7 @@ export const Legend = ({ items }: { items: [string, string][] }) => (
   <ul className="flex flex-wrap gap-x-4 gap-y-1 font-mono text-[11px] text-muted" aria-label="Legend">
     {items.map(([label, color]) => (
       <li key={label} className="flex items-center gap-1.5">
-        <span aria-hidden="true" className="size-2.5 rounded-[2px]" style={{ background: color }} />
+        <span aria-hidden="true" className="size-2.5 rounded-[2px]" style={{ background: label === 'Justified' ? `repeating-linear-gradient(45deg, ${color} 0 2px, var(--surface-2) 2px 3px)` : color }} />
         {label}
       </li>
     ))}
@@ -30,7 +30,7 @@ export const Legend = ({ items }: { items: [string, string][] }) => (
 )
 
 export const ChartCard = ({ title, note, legend, children }: { title: string; note?: string; legend?: ReactNode; children: ReactNode }) => (
-  <section className="rounded-xl border border-line bg-bg p-3.5">
+  <section className="rounded-xl border border-line bg-surface-2 p-3.5">
     <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
       <h3 className="font-mono text-[11px] tracking-wider text-ink-2 uppercase">{title}</h3>
       {note && <span className="font-mono text-[11px] text-muted">{note}</span>}
@@ -81,6 +81,11 @@ export function StackedBars({ bars, height = 150, tickEvery = 1, format, highlig
           const x = e.clientX - e.currentTarget.getBoundingClientRect().left - PAD.l
           setHover(Math.min(bars.length - 1, Math.max(0, Math.floor(x / slot))))
         }}>
+          <defs>
+            <pattern id="hatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <rect width="2" height="5" fill="var(--surface-2)" opacity="0.55" />
+            </pattern>
+          </defs>
           {[0, 0.5, 1].map((f) => (
             <g key={f}>
               <line x1={PAD.l} x2={w - PAD.r} y1={y(max * f)} y2={y(max * f)} stroke="var(--line)" strokeWidth="1" strokeDasharray={f ? '2 3' : undefined} />
@@ -97,7 +102,12 @@ export function StackedBars({ bars, height = 150, tickEvery = 1, format, highlig
             return (
               <g key={i} opacity={dim ? 0.45 : 1}>
                 {b.counted > 0 && <rect x={x} y={y(b.counted)} width={bw} height={Math.max(1, hc)} rx={b.justified ? 0 : 2} fill={COUNTED} />}
-                {b.justified > 0 && <rect x={x} y={y(b.counted + b.justified)} width={bw} height={Math.max(1, hj - (b.counted ? 1.5 : 0))} rx={2} fill={JUSTIFIED} />}
+                {b.justified > 0 && (
+                  <>
+                    <rect x={x} y={y(b.counted + b.justified)} width={bw} height={Math.max(1, hj - (b.counted ? 1.5 : 0))} rx={2} fill={JUSTIFIED} />
+                    <rect x={x} y={y(b.counted + b.justified)} width={bw} height={Math.max(1, hj - (b.counted ? 1.5 : 0))} rx={2} fill="url(#hatch)" />
+                  </>
+                )}
                 {(i % tickEvery === 0 || i === highlight) && (
                   <text x={x + bw / 2} y={height - 6} textAnchor="middle" fontSize="10" fontFamily={MONO} fill={i === highlight ? 'var(--ink)' : 'var(--muted)'}>
                     {b.label}
@@ -109,7 +119,7 @@ export function StackedBars({ bars, height = 150, tickEvery = 1, format, highlig
         </svg>
       )}
       {hb && hover !== null && w > 0 && (
-        <div className="pointer-events-none absolute z-10 rounded-lg border border-line-strong bg-bg px-2.5 py-1.5 font-mono text-[11px] shadow-lg" style={{ left: Math.min(Math.max(PAD.l + hover * slot + slot / 2, 70), w - 70), top: 0, transform: 'translateX(-50%)' }}>
+        <div className="pointer-events-none absolute z-10 rounded-lg border border-line-strong bg-float px-2.5 py-1.5 font-mono text-[11px] shadow-lg" style={{ left: Math.min(Math.max(PAD.l + hover * slot + slot / 2, 70), w - 70), top: 0, transform: 'translateX(-50%)' }}>
           <p className="text-ink">{hb.title}</p>
           <p className="text-ink-2">{format(hb.counted + hb.justified)}</p>
           {hb.justified > 0 && hb.counted > 0 && (
@@ -136,7 +146,7 @@ export function RankedBars({ rows, format }: { rows: { id: string; label: string
             <span className="truncate text-ink-2">{r.label}</span>
             <span className="flex h-3 items-center gap-[2px]" aria-hidden="true">
               {r.counted > 0 && <span className="h-full rounded-r-[3px] rounded-l-[2px]" style={{ width: `${(r.counted / max) * 100}%`, background: COUNTED }} />}
-              {r.justified > 0 && <span className="h-full rounded-r-[3px] rounded-l-[2px]" style={{ width: `${(r.justified / max) * 100}%`, background: JUSTIFIED }} />}
+              {r.justified > 0 && <span className="h-full rounded-r-[3px] rounded-l-[2px]" style={{ width: `${(r.justified / max) * 100}%`, background: `repeating-linear-gradient(45deg, ${JUSTIFIED} 0 3px, color-mix(in oklab, ${JUSTIFIED} 55%, var(--surface-2)) 3px 5px)` }} />}
             </span>
             <span className="text-right text-ink tabular">
               {format(t)} <span className="text-muted">{Math.round((t / sum) * 100)}%</span>
@@ -188,7 +198,7 @@ export function PaceChart({ now, before, nowLabel, beforeLabel, elapsed, format,
         </svg>
       )}
       {hover !== null && w > 0 && (
-        <div className="pointer-events-none absolute z-10 rounded-lg border border-line-strong bg-bg px-2.5 py-1.5 font-mono text-[11px] shadow-lg" style={{ left: Math.min(Math.max(x(hover), 70), w - 70), top: 0, transform: 'translateX(-50%)' }}>
+        <div className="pointer-events-none absolute z-10 rounded-lg border border-line-strong bg-float px-2.5 py-1.5 font-mono text-[11px] shadow-lg" style={{ left: Math.min(Math.max(x(hover), 70), w - 70), top: 0, transform: 'translateX(-50%)' }}>
           <p className="text-ink">Day {hover + 1}</p>
           {hover < cur.length && (
             <p className="text-ink-2">

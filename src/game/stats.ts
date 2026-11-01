@@ -20,6 +20,8 @@ export interface DayFacts {
   noteWords: number
   /** Every planned meal eaten. */
   fullMeals: boolean
+  /** Meals planned that day (the person's own target). */
+  mealTarget: number
   hasNote: boolean
   hasCritical: boolean
   hasObservation: boolean
@@ -43,6 +45,7 @@ export function dayFacts(s: AppState, date: DateKey, spendByDay: Map<DateKey, nu
     share: c.share,
     meals: mealsDone,
     fullMeals: mealsDone === slots.length,
+    mealTarget: slots.length,
     mealNotes: slots.filter((n) => meals[n]?.notes?.trim()).length,
     noteWords: words(ct) + words(ob),
     hasNote: !!(ct || ob),

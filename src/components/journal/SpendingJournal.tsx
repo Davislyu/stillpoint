@@ -71,7 +71,7 @@ export function SpendingJournal({ hide }: { hide: boolean }) {
       </div>
 
       {openForm && (
-        <div className="mt-3 rounded-xl border border-line bg-bg p-3.5">
+        <div className="mt-3 rounded-xl border border-line bg-surface-2 p-3.5">
           <SpendingForm />
         </div>
       )}
@@ -139,7 +139,7 @@ export function SpendingJournal({ hide }: { hide: boolean }) {
                 </span>
                 <span className="tabular">{format(list.reduce((a, e) => a + e.amountCents, 0))}</span>
               </p>
-              <ul className="divide-y divide-line overflow-hidden rounded-xl border border-line bg-bg">
+              <ul className="divide-y divide-line overflow-hidden rounded-xl border border-line bg-surface-2">
                 {list.map((e) => (
                   <li key={e.id} className="flex items-center gap-2.5 px-3 py-2">
                     <span className="min-w-0 flex-1">

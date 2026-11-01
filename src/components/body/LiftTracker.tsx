@@ -43,7 +43,7 @@ function LiftCard({ ex }: { ex: Exercise }) {
   const btn = 'grid h-10 min-w-12 place-items-center rounded-full border border-line px-3 text-sm text-ink-2 tabular hover:bg-surface-2 hover:text-ink active:scale-95'
 
   return (
-    <li className="rounded-2xl border border-line bg-bg p-4" data-testid="lift-card">
+    <li className="rounded-2xl border border-line bg-surface-2 p-4" data-testid="lift-card">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="truncate text-sm font-medium text-ink">{ex.name}</h3>

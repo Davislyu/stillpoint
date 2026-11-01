@@ -85,7 +85,7 @@ export function NoteEditor({ note, notes, onOpen, onClose, hide = false }: { not
   const chip = 'max-w-full truncate rounded-full border border-line px-2.5 py-1 text-[12px] hover:bg-surface-2'
 
   return (
-    <div className="rounded-xl border border-line bg-bg p-4" data-testid="note-editor">
+    <div className="rounded-xl border border-line bg-surface-2 p-4" data-testid="note-editor">
       <div className="flex items-start gap-2">
         <input
           aria-label="Note title"
@@ -163,7 +163,7 @@ export function NoteEditor({ note, notes, onOpen, onClose, hide = false }: { not
           className={`${inputClass} h-auto min-h-40 resize-y py-2.5 font-mono text-[13px] leading-relaxed`}
         />
         {picks.length > 0 && (
-          <ul className="absolute right-2 bottom-2 left-2 z-10 overflow-hidden rounded-xl border border-line-strong bg-bg shadow-lg" role="listbox" aria-label="Link to a note">
+          <ul className="absolute right-2 bottom-2 left-2 z-10 overflow-hidden rounded-xl border border-line-strong bg-float shadow-lg" role="listbox" aria-label="Link to a note">
             {picks.map((p) => (
               <li key={p.id}>
                 <button type="button" role="option" aria-selected="false" className="block w-full truncate px-3 py-2 text-left text-sm text-ink hover:bg-surface-2" onMouseDown={(e) => (e.preventDefault(), insert(displayTitle(p)))}>

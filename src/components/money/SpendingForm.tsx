@@ -30,7 +30,7 @@ export function SpendingForm() {
     e.preventDefault()
     if (!valid || cents === null) return
     dispatch({ type: 'spending/add', date, amountCents: cents, description, category, justified })
-    toast(justified ? 'Logged as justified. It won’t count against your progress.' : 'Added to extra spendings.')
+    toast(justified ? 'Logged as justified. It won’t count against your progress.' : 'Payment logged.')
     setAmount('')
     setDescription('')
     setDate(today)

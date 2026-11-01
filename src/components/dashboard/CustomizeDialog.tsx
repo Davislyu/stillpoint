@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useInstall } from '../../hooks/useInstall'
-import { aurasFor, AURA_BY_ID, layoutFromAura, type Layout } from '../../dashboard/layout'
+import { arrangementFrom, aurasFor, AURA_BY_ID, layoutFromAura, type Layout } from '../../dashboard/layout'
+import { setArranging } from '../../hooks/useArrange'
 import { useStore } from '../../state/store'
 import { useThemeCtx } from '../../themes/vibe'
 import { Button } from '../ui/Button'
@@ -67,6 +68,36 @@ export default function CustomizeDialog({ onClose }: { onClose: () => void }) {
           </div>
           <h3 className="mt-6 mb-2 text-[13px] text-ink-2">Panels</h3>
           <LayoutEditor layout={layout} onChange={change} />
+
+          <h3 className="mt-6 mb-2 hidden text-[13px] text-ink-2 lg:block">Arrange</h3>
+          <div className="hidden items-center gap-3 rounded-2xl border border-line bg-surface px-4 py-3 lg:flex">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm text-ink">Drag panels where you want them</p>
+              <p className="text-[12px] leading-snug text-muted">Move panels around the page and pull a corner to change their size. Wide screens only.</p>
+            </div>
+            {layout.order && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  change({ ...layout, order: undefined, sizes: undefined })
+                }}
+              >
+                Reset
+              </Button>
+            )}
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                if (!layout.order) change({ ...layout, ...arrangementFrom(layout) })
+                setArranging(true)
+                onClose()
+              }}
+            >
+              {layout.order ? 'Rearrange' : 'Start'}
+            </Button>
+          </div>
 
           <h3 className="mt-6 mb-2 text-[13px] text-ink-2">Evening reminder</h3>
           <div className="rounded-2xl border border-line bg-surface px-4 py-3">

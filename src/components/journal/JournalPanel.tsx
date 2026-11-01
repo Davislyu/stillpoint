@@ -7,6 +7,7 @@ import type { DateKey } from '../../state/types'
 import { Button } from '../ui/Button'
 import { inputClass } from '../ui/Field'
 import { HideToggle } from '../ui/HideToggle'
+import { Veil } from '../ui/Veil'
 import { Panel } from '../ui/Panel'
 import { SpendingJournal } from './SpendingJournal'
 
@@ -60,7 +61,7 @@ function EntryRow({ e, q, open, onToggle, hide, onEdit }: { e: Entry; q: string;
       </div>
     )
   return (
-    <li id={`journal-${e.date}`} className={`rounded-xl border bg-bg ${open ? 'border-line-strong' : 'border-line'}`}>
+    <li id={`journal-${e.date}`} className={`rounded-xl border bg-surface-2 ${open ? 'border-line-strong' : 'border-line'}`}>
       <button type="button" onClick={onToggle} aria-expanded={open} className="flex w-full items-center justify-between gap-3 px-3.5 py-2.5 text-left">
         <span className="font-mono text-[12px] text-ink">
           <span className="text-muted">#{String(e.no).padStart(4, '0')}</span> {e.date} <span className="text-muted">{fromKey(e.date).toLocaleDateString(undefined, { weekday: 'short' })}</span>
@@ -134,8 +135,9 @@ export function JournalPanel({ onEdit }: { onEdit?: (d: DateKey) => void }) {
           </button>
         ))}
       </div>
+      <Veil>
       {tab === 'spending' ? (
-        <SpendingJournal hide={hide} />
+        <SpendingJournal hide={false} />
       ) : (
         <>
       <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line font-mono sm:grid-cols-5" aria-label="Journal statistics">
@@ -202,6 +204,7 @@ export function JournalPanel({ onEdit }: { onEdit?: (d: DateKey) => void }) {
       )}
         </>
       )}
+      </Veil>
     </Panel>
   )
 }

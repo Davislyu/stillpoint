@@ -21,6 +21,9 @@ import { FirstWeek } from './components/dashboard/FirstWeek'
 import { useReminder } from './hooks/useReminder'
 import { WeekPanel } from './components/dashboard/WeekPanel'
 import { JournalPanel } from './components/journal/JournalPanel'
+import { ArrangeBar } from './components/dashboard/ArrangeBar'
+import { ArrangeGrid } from './components/dashboard/ArrangeGrid'
+import { setArranging, useArranging, useMediaQuery } from './hooks/useArrange'
 import { BrainPanel } from './components/brain/BrainPanel'
 import { LiftTracker } from './components/body/LiftTracker'
 import { HuntPanel } from './components/game/HuntPanel'
@@ -45,6 +48,8 @@ export default function App() {
   const [selectedDay, setSelectedDay] = useState<DateKey>(today)
   const backToToday = () => setSelectedDay(today)
   const [quick, setQuick] = useState(false)
+  const wide = useMediaQuery('(min-width: 1024px)')
+  const arrangingOn = useArranging()
   useReminder()
 
   // Snap back to today after midnight.
@@ -181,6 +186,11 @@ export default function App() {
     }
   }
   const asideIds = ASIDE.filter(on)
+  const arranged = !!layout.order
+  const arranging = arrangingOn && wide && arranged
+  const gridIds = (layout.order ?? []).filter((id) => !hidden.has(id))
+  const saveArrangement = ({ ids, sizes }: { ids: PanelId[]; sizes: NonNullable<typeof layout.sizes> }) =>
+    setLayout({ ...layout, order: [...ids, ...(layout.order ?? []).filter((id) => !ids.includes(id))], sizes })
   const heroOn = !hidden.has('hero')
 
   return (
@@ -197,25 +207,46 @@ export default function App() {
           }
         />
         <Celebration />
-        <main
-          className={`mx-auto mt-6 grid max-w-[1240px] gap-5 px-4 sm:px-6 lg:mt-8 lg:gap-8 lg:px-8 ${asideIds.length ? 'lg:grid-cols-[minmax(0,1fr)_24rem]' : 'lg:max-w-3xl'}`}
-        >
-          <div className="flex min-w-0 flex-col gap-5">
-            <div className={view === 'today' ? '' : 'hidden lg:block'}>
-              <Greeting />
+        {arranged ? (
+          <main className="mx-auto mt-6 max-w-[1240px] px-4 sm:px-6 lg:mt-8 lg:px-8">
+            <div className="mb-5 flex flex-col gap-5 lg:mb-6">
+              <div className={view === 'today' ? '' : 'hidden lg:block'}>
+                <Greeting />
+              </div>
+              <div className={view === 'today' ? '' : 'hidden'}>
+                <FirstWeek />
+              </div>
             </div>
-            <div className={view === 'today' ? '' : 'hidden'}>
-              <FirstWeek />
+            <ArrangeGrid
+              ids={gridIds}
+              sizes={layout.sizes ?? {}}
+              editing={arranging}
+              render={panel}
+              itemClass={(id) => (tabOf(id) === view ? '' : 'hidden lg:block')}
+              onChange={saveArrangement}
+            />
+          </main>
+        ) : (
+          <main
+            className={`mx-auto mt-6 grid max-w-[1240px] gap-5 px-4 sm:px-6 lg:mt-8 lg:gap-8 lg:px-8 ${asideIds.length ? 'lg:grid-cols-[minmax(0,1fr)_24rem]' : 'lg:max-w-3xl'}`}
+          >
+            <div className="flex min-w-0 flex-col gap-5">
+              <div className={view === 'today' ? '' : 'hidden lg:block'}>
+                <Greeting />
+              </div>
+              <div className={view === 'today' ? '' : 'hidden'}>
+                <FirstWeek />
+              </div>
+              {featured && wrap(featured, panel(featured))}
+              {MAIN.filter(on).map((id) => wrap(id, panel(id)))}
             </div>
-            {featured && wrap(featured, panel(featured))}
-            {MAIN.filter(on).map((id) => wrap(id, panel(id)))}
-          </div>
-          {asideIds.length > 0 && (
-            <aside aria-label="More panels" className="flex min-w-0 flex-col gap-5 lg:pt-2">
-              {asideIds.map((id) => wrap(id, panel(id)))}
-            </aside>
-          )}
-        </main>
+            {asideIds.length > 0 && (
+              <aside aria-label="More panels" className="flex min-w-0 flex-col gap-5 lg:pt-2">
+                {asideIds.map((id) => wrap(id, panel(id)))}
+              </aside>
+            )}
+          </main>
+        )}
         <button
           type="button"
           onClick={() => setQuick(true)}
@@ -235,6 +266,7 @@ export default function App() {
             />
           </Suspense>
         )}
+        {arranging && <ArrangeBar onReset={() => (setLayout({ ...layout, order: undefined, sizes: undefined }), setArranging(false))} />}
         <MobileNav view={view} tabs={tabs} onChange={changeView} />
       </div>
     </GameProvider>
